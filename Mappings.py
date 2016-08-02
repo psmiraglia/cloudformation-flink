@@ -165,3 +165,9 @@ AWSRegionArch2AMI = {
     "cn-north-1": {"PV64": "ami-77559f1a", "HVM64": "ami-8e6aa0e3",
                    "HVMG2": "NOT_SUPPORTED"}
 }
+
+
+def add_mappings(t):
+    t.add_mapping("AWSInstanceType2Arch", AWSInstanceType2Arch)
+    t.add_mapping("AWSInstanceType2NATArch", AWSInstanceType2NATArch)
+    t.add_mapping("AWSRegionArch2AMI", AWSRegionArch2AMI)
