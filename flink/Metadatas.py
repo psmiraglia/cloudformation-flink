@@ -42,7 +42,8 @@ _packages = {
 }
 
 _sources = {
-    "/tmp/flink.tgz": "http://www.apache.org/dyn/closer.lua/flink/flink-1.0.3/flink-1.0.3-bin-hadoop27-scala_2.11.tgz"
+    "/tmp/flink.tgz": ("http://www.apache.org/dyn/closer.lua/flink/" +
+                       "flink-1.0.3/flink-1.0.3-bin-hadoop27-scala_2.11.tgz")
 }
 
 users = {
