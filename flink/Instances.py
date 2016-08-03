@@ -26,6 +26,7 @@ from troposphere import FindInMap
 from troposphere import Ref
 from troposphere.ec2 import Instance
 from troposphere.ec2 import NetworkInterfaceProperty
+import Metadatas
 import Networking
 import Parameters
 import SecurityGroups
@@ -56,7 +57,8 @@ def task_manager(n):
                 DeleteOnTermination='true',
                 SubnetId=Ref(Networking.sn_task_manager)
             )
-        ]
+        ],
+        Metadata=Metadatas.tm_metadata
     )
 
 
@@ -99,5 +101,6 @@ def job_manager():
                 DeleteOnTermination='true',
                 SubnetId=Ref(Networking.sn_task_manager)
             ),
-        ]
+        ],
+        Metadata=Metadatas.jm_metadata
     )

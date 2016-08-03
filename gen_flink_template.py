@@ -35,6 +35,7 @@ from troposphere import Parameter
 from troposphere import Ref
 from troposphere import Template
 import argparse
+import datetime
 import troposphere.ec2 as ec2
 
 TEMPLATE_DESCRIPTION = "Composes a Flink cluster on AWS"
@@ -46,6 +47,9 @@ def generate_template(tms=1):
 
     t.add_description(TEMPLATE_DESCRIPTION)
     t.add_version(TEMPLATE_VERSION)
+    t.add_metadata({
+        'LastUpdated': datetime.datetime.now().strftime('%c')
+    })
 
     # mappings
     Mappings.add_mappings(t)
@@ -59,7 +63,6 @@ def generate_template(tms=1):
     # security groups
     SecurityGroups.add_resources(t)
 
-    """
     job_manager = t.add_resource(Instances.job_manager())
     prefix = "JM"
     t.add_output(Outputs.instance_id(job_manager, prefix))
@@ -74,7 +77,6 @@ def generate_template(tms=1):
         t.add_output(Outputs.az(i, prefix, n))
         t.add_output(Outputs.public_dns(i, prefix, n))
         t.add_output(Outputs.public_ip(i, prefix, n))
-    """
 
     return t
 
