@@ -24,16 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from flink import Instances
+from flink import Mappings
+from flink import Networking
+from flink import Outputs
+from flink import Parameters
+from flink import SecurityGroups
 from troposphere import FindInMap
 from troposphere import Parameter
 from troposphere import Ref
 from troposphere import Template
-import Instances
-import Mappings
-import Outputs
-import Parameters
-import SecurityGroups
-import Networking
 import argparse
 import troposphere.ec2 as ec2
 
