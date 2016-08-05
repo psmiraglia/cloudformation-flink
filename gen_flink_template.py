@@ -57,14 +57,14 @@ def generate_template(tms=1):
     # parameters
     Parameters.add_parameters(t)
 
-    # networking resources
-    Networking.add_resources(t)
+    # networking resources (temporarily disabled)
+    #Networking.add_resources(t)
 
     # security groups
     SecurityGroups.add_resources(t)
 
     job_manager = t.add_resource(Instances.job_manager())
-    prefix = "JM"
+    prefix = "JobManager"
     t.add_output(Outputs.instance_id(job_manager, prefix))
     t.add_output(Outputs.az(job_manager, prefix))
     t.add_output(Outputs.public_dns(job_manager, prefix))
@@ -72,7 +72,7 @@ def generate_template(tms=1):
 
     for n in range(0, tms):
         i = t.add_resource(Instances.task_manager(n))
-        prefix = "TM"
+        prefix = "TaskManager"
         t.add_output(Outputs.instance_id(i, prefix, n))
         t.add_output(Outputs.az(i, prefix, n))
         t.add_output(Outputs.public_dns(i, prefix, n))
