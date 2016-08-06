@@ -22,20 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from troposphere import Base64
 from troposphere import FindInMap
+from troposphere import Join
 from troposphere import Ref
 from troposphere.ec2 import Instance
 from troposphere.ec2 import NetworkInterfaceProperty
+from troposphere.policies import CreationPolicy
+from troposphere.policies import ResourceSignal
 import Metadatas
 import Networking
 import Parameters
 import SecurityGroups
 
+JOB_MANAGER_INAME = "JobManagerInstance"
+TASK_MANAGER_INAME = "TaskManagerInstance"
+
 
 def task_manager(n):
+    iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
     return Instance(
-        "TaskManager%2.2d" % n,
+        iname,
         InstanceType=Ref(Parameters.instance_type),
+        SecurityGroups=[
+            Ref(SecurityGroups.sg_ssh),
+            Ref(SecurityGroups.sg_taskmanager),
+        ],
         KeyName=Ref(Parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
@@ -46,25 +58,42 @@ def task_manager(n):
                 "Arch"
             )
         ),
-        NetworkInterfaces=[
-            NetworkInterfaceProperty(
-                GroupSet=[
-                    Ref(SecurityGroups.sg_ssh),
-                    Ref(SecurityGroups.sg_taskmanager),
-                ],
-                AssociatePublicIpAddress='true',
-                DeviceIndex='0',
-                DeleteOnTermination='true',
-                SubnetId=Ref(Networking.sn_task_manager)
+        Metadata=Metadatas.tm_metadata,
+        UserData=Base64(
+            Join('', [
+                "#!/bin/bash -xe\n",
+                "yum update -y aws-cfn-bootstrap\n",
+                "# Install the files and packages from the metadata\n",
+                "/opt/aws/bin/cfn-init -v ",
+                "         --stack ",
+                Ref("AWS::StackName"),
+                "         --resource %s " % iname,
+                "         --configsets ICR ",
+                "         --region ",
+                Ref("AWS::Region"),
+                "\n",
+                "# Signal the status from cfn-init\n",
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "         --stack ",
+                Ref("AWS::StackName"),
+                "         --resource %s " % iname,
+                "         --region ",
+                Ref("AWS::Region"),
+                "\n"
+            ])
+        ),
+        CreationPolicy=CreationPolicy(
+            ResourceSignal=ResourceSignal(
+                Timeout='PT15M'
             )
-        ],
-        Metadata=Metadatas.tm_metadata
+        ),
     )
 
 
-def job_manager():
+def job_manager(n=0):
+    iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
     return Instance(
-        "JobManager",
+        iname,
         InstanceType=Ref(Parameters.instance_type),
         SecurityGroups=[
             Ref(SecurityGroups.sg_ssh),
@@ -80,27 +109,34 @@ def job_manager():
                 "Arch"
             )
         ),
-        NetworkInterfaces=[
-            NetworkInterfaceProperty(
-                GroupSet=[
-                    Ref(SecurityGroups.sg_ssh),
-                    Ref(SecurityGroups.sg_jobmanager),
-                ],
-                AssociatePublicIpAddress='true',
-                DeviceIndex='0',
-                DeleteOnTermination='true',
-                SubnetId=Ref(Networking.sn_job_manager)
-            ),
-            NetworkInterfaceProperty(
-                GroupSet=[
-                    Ref(SecurityGroups.sg_ssh),
-                    Ref(SecurityGroups.sg_taskmanager),
-                ],
-                AssociatePublicIpAddress='true',
-                DeviceIndex='1',
-                DeleteOnTermination='true',
-                SubnetId=Ref(Networking.sn_task_manager)
-            ),
-        ],
-        Metadata=Metadatas.jm_metadata
+        Metadata=Metadatas.jm_metadata,
+        UserData=Base64(
+            Join('', [
+                "#!/bin/bash -xe\n",
+                "yum update -y aws-cfn-bootstrap\n",
+                "# Install the files and packages from the metadata\n",
+                "/opt/aws/bin/cfn-init -v ",
+                "         --stack ",
+                Ref("AWS::StackName"),
+                "         --resource %s " % iname,
+                "         --configsets ICR ",
+                "         --region ",
+                Ref("AWS::Region"),
+                "\n",
+                "# Signal the status from cfn-init\n",
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "         --stack ",
+                Ref("AWS::StackName"),
+                "         --resource %s " % iname,
+                "         --region ",
+                Ref("AWS::Region"),
+                "\n"
+            ])
+        ),
+        CreationPolicy=CreationPolicy(
+            ResourceSignal=ResourceSignal(
+                Timeout='PT15M'
+            )
+        ),
+
     )

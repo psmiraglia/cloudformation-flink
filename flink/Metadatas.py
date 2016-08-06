@@ -22,117 +22,90 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from troposphere import FindInMap
 from troposphere import Join
+from troposphere import Ref
 from troposphere.cloudformation import Init
 from troposphere.cloudformation import InitConfig
+from troposphere.cloudformation import InitConfigSets
 from troposphere.cloudformation import InitFile
 from troposphere.cloudformation import InitFiles
 from troposphere.cloudformation import InitService
 from troposphere.cloudformation import InitServices
 from troposphere.cloudformation import Metadata
+import Parameters
 
-# commons settings
+# common
 
-_packages = {
-    "yum": {
-        "httpd": [],
-        "git": [],
-        "wget": []
+install = InitConfig(
+    sources={
+        "/opt": FindInMap(
+            "AWSRegion2FlinkBinary",
+            Ref("AWS::Region"),
+            Ref(Parameters.flink_version)
+        )
     }
-}
-
-_sources = {
-    "/tmp/flink.tgz": ("http://www.apache.org/dyn/closer.lua/flink/" +
-                       "flink-1.0.3/flink-1.0.3-bin-hadoop27-scala_2.11.tgz")
-}
-
-users = {
-    "flink": {
-        "groups": ["flink"],
-        "uid": "100",
-        "homeDir": "/home/flink"
-    }
-}
-
-groups = {
-   "flink": {}
-}
-
-services = {}
-
-# JobManager settings
-
-lines = []
-with open("files/flink-conf.yaml", "r") as f:
-    lines = f.readlines()
-    f.close()
-
-flink_conf_yaml = InitFile(
-    content=Join("", lines),
-    mode="0644",
-    owner="flink",
-    group="flink"
 )
 
-packages = _packages.copy()
-packages["yum"].update({
-    "nmap": []
-})
-
-sources = _sources.copy()
-sources.update({
-    "/foo/bar.txt": "http://www.example.com/bar.txt"
-})
+# JobManager
 
 jm_metadata = Metadata(
-    Init({
-        "config": InitConfig(
-            packages=packages,
-            files=InitFiles({
-                "/opt/flink/conf/flink-conf.yaml": flink_conf_yaml
-            }),
+    Init(
+        InitConfigSets(ICR=["install", "configure", "run"]),
+        install=install,
+        configure=InitConfig(
+            # packages=packages,
+            # groups=groups,
+            # users=users,
+            # sources=sources,
+            # files=InitFiles({}),
+            # commands=commands,
+            # services=InitServices({}),
+        ),
+        run=InitConfig(
+            # packages=packages,
+            # groups=groups,
+            # users=users,
+            # sources=sources,
+            # files=InitFiles({}),
             commands={
-                "000-create-flink-base-dir": {
-                    "command": "/usr/bin/mkdir -p /opt/flink",
-                },
-                "001-extract-flink-binaries": {
-                    "command": "tar zxvf /tmp/flink.tgz"
+                "000-run": {
+                    "command": "sudo bin/jobmanager.sh start cluster",
+                    "cwd": "/opt/flink-1.0.3"
                 }
             },
-            services=services,
-            users=users,
-            groups=groups,
-            sources=sources
-        )
-    })
+            # services=InitServices({}),
+        ),
+    )
 )
 
-# TaskManager settings
-
-packages = _packages.copy()
-
-sources = _sources.copy()
-sources.update({
-    "/foo/bar.txt": "http://www.example.com/bar.txt",
-    "/foo/barXXX.txt": "http://www.example.com/barXXX.txt",
-})
-
+# TaskManager
 tm_metadata = Metadata(
-    Init({
-        "config": InitConfig(
-            packages=packages,
+    Init(
+        InitConfigSets(ICR=["install", "configure", "run"]),
+        install=install,
+        configure=InitConfig(
+            # packages=packages,
+            # groups=groups,
+            # users=users,
+            # sources=sources,
+            # files=InitFiles({}),
+            # commands=commands,
+            # services=InitServices({}),
+        ),
+        run=InitConfig(
+            # packages=packages,
+            # groups=groups,
+            # users=users,
+            # sources=sources,
+            # files=InitFiles({}),
             commands={
-                "000-create-flink-base-dir": {
-                    "command": "/usr/bin/mkdir -p /opt/flink",
-                },
-                "001-extract-flink-binaries": {
-                    "command": "tar zxvf /tmp/flink.tgz"
+                "000-run": {
+                    "command": "sudo bin/taskmanager.sh start",
+                    "cwd": "/opt/flink-1.0.3"
                 }
             },
-            services=services,
-            users=users,
-            groups=groups,
-            sources=sources
-        )
-    })
+            # services=InitServices({}),
+        ),
+    )
 )
