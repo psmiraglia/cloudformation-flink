@@ -30,10 +30,10 @@ from troposphere.ec2 import Instance
 from troposphere.ec2 import NetworkInterfaceProperty
 from troposphere.policies import CreationPolicy
 from troposphere.policies import ResourceSignal
-import Metadatas
-import Networking
-import Parameters
-import SecurityGroups
+import metadatas
+import networking
+import parameters
+import securitygroups
 
 JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
@@ -43,22 +43,22 @@ def task_manager(n):
     iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
     return Instance(
         iname,
-        InstanceType=Ref(Parameters.instance_type),
+        InstanceType=Ref(parameters.instance_type),
         SecurityGroups=[
-            Ref(SecurityGroups.sg_ssh),
-            Ref(SecurityGroups.sg_taskmanager),
+            Ref(securitygroups.sg_ssh),
+            Ref(securitygroups.sg_taskmanager),
         ],
-        KeyName=Ref(Parameters.key_name),
+        KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
             Ref("AWS::Region"),
             FindInMap(
                 "AWSInstanceType2Arch",
-                Ref(Parameters.instance_type),
+                Ref(parameters.instance_type),
                 "Arch"
             )
         ),
-        Metadata=Metadatas.tm_metadata,
+        Metadata=metadatas.tm_metadata,
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",
@@ -94,22 +94,22 @@ def job_manager(n=0):
     iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
     return Instance(
         iname,
-        InstanceType=Ref(Parameters.instance_type),
+        InstanceType=Ref(parameters.instance_type),
         SecurityGroups=[
-            Ref(SecurityGroups.sg_ssh),
-            Ref(SecurityGroups.sg_jobmanager),
+            Ref(securitygroups.sg_ssh),
+            Ref(securitygroups.sg_jobmanager),
         ],
-        KeyName=Ref(Parameters.key_name),
+        KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
             Ref("AWS::Region"),
             FindInMap(
                 "AWSInstanceType2Arch",
-                Ref(Parameters.instance_type),
+                Ref(parameters.instance_type),
                 "Arch"
             )
         ),
-        Metadata=Metadatas.jm_metadata,
+        Metadata=metadatas.jm_metadata,
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",

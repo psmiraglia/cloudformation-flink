@@ -33,7 +33,7 @@ from troposphere.cloudformation import InitFiles
 from troposphere.cloudformation import InitService
 from troposphere.cloudformation import InitServices
 from troposphere.cloudformation import Metadata
-import Parameters
+import parameters
 
 # common
 
@@ -42,7 +42,7 @@ install = InitConfig(
         "/opt": FindInMap(
             "AWSRegion2FlinkBinary",
             Ref("AWS::Region"),
-            Ref(Parameters.flink_version)
+            Ref(parameters.flink_version)
         )
     }
 )
