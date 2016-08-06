@@ -35,6 +35,7 @@ TEMPLATE_DESCRIPTION = "Composes a Flink cluster on AWS"
 TEMPLATE_VERSION = "2010-09-09"
 LAST_UPDATE = datetime.datetime.now().strftime('%c')
 
+
 def _generate_template(tms=1, with_vpc=False):
     t = Template()
 
@@ -63,7 +64,7 @@ def _generate_template(tms=1, with_vpc=False):
     t.add_output(outputs.public_ip(job_manager, prefix))
 
     for n in range(0, tms):
-        i = t.add_resource(instances.task_manager(n, with_vpc))
+        i = t.add_resource(instances.task_manager(n, job_manager, with_vpc))
         prefix = "TaskManager"
         t.add_output(outputs.instance_id(i, prefix, n))
         t.add_output(outputs.az(i, prefix, n))
@@ -71,10 +72,11 @@ def _generate_template(tms=1, with_vpc=False):
         t.add_output(outputs.public_ip(i, prefix, n))
 
     return t.to_json()
-    
+
 
 def without_vpc(tms=1):
     return _generate_template(tms, with_vpc=False)
+
 
 def with_vpc(tms=1):
     return _generate_template(tms, with_vpc=True)

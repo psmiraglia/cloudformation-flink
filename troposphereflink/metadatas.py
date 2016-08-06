@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from troposphere import FindInMap
+from troposphere import GetAtt
 from troposphere import Join
 from troposphere import Ref
 from troposphere.cloudformation import Init
@@ -37,81 +38,110 @@ import parameters
 
 # common
 
-install = InitConfig(
+install_flink_binaries = InitConfig(
     sources={
-        "/opt": FindInMap(
-            "FlinkVersion2Env",
-            Ref(parameters.flink_version),
-            "BINURL"
+        "/opt": FindInMap("FlinkVersion2Env", Ref(parameters.flink_version),
+                          "BINURL")
+    },
+    files=InitFiles({
+        "/opt/flink": InitFile(
+            content=FindInMap("FlinkVersion2Env",
+                              Ref(parameters.flink_version), "FLINKHOME"),
+            mode="120000"
         )
-    }
+    }),
 )
 
 # JobManager
 
-jm_metadata = Metadata(
-    Init(
-        InitConfigSets(ICR=["install", "configure", "run"]),
-        install=install,
-        configure=InitConfig(
-            # packages=packages,
-            # groups=groups,
-            # users=users,
-            # sources=sources,
-            # files=InitFiles({}),
-            # commands=commands,
-            # services=InitServices({}),
-        ),
-        run=InitConfig(
-            # packages=packages,
-            # groups=groups,
-            # users=users,
-            # sources=sources,
-            # files=InitFiles({}),
-            commands={
-                "000-run": {
-                    "command": "sudo $FLINK_HOME/bin/jobmanager.sh start local",
-                    "env": {
-                        "FLINK_HOME": FindInMap(
-                            "FlinkVersion2Env",
-                            Ref(parameters.flink_version),
-                            "FLINKHOME"
-                        )
+
+def jm_metadata(**kwargs):
+    return Metadata(Init(
+            InitConfigSets(ICR=["install", "configure", "run"]),
+            install=install_flink_binaries,
+            configure=InitConfig(
+                # packages=packages,
+                # groups=groups,
+                # users=users,
+                # sources=sources,
+                files=InitFiles({
+                    "/opt/flink/conf/flink-conf.yaml": InitFile(
+                        content=Join("", [
+                            "jobmanager.rpc.address: localhost\n",
+                            "jobmanager.rpc.port: 6123\n",
+                            "jobmanager.heap.mb: 256\n",
+                            "taskmanager.heap.mb: 512\n",
+                            "taskmanager.numberOfTaskSlots: 1\n",
+                            "taskmanager.memory.preallocate: false\n",
+                            "parallelism.default: 1\n",
+                            "jobmanager.web.port: 8081\n",
+                        ])
+                    )
+                }),
+                # commands=commands,
+                # services=InitServices({}),
+            ),
+            run=InitConfig(
+                # packages=packages,
+                # groups=groups,
+                # users=users,
+                # sources=sources,
+                # files=InitFiles({}),
+                commands={
+                    "000-run": {
+                        "command": "sudo bin/jobmanager.sh start cluster",
+                        "cwd": "/opt/flink"
                     }
-                }
-            },
-            # services=InitServices({}),
-        ),
+                },
+                # services=InitServices({}),
+            ),
+        )
     )
-)
 
 # TaskManager
-tm_metadata = Metadata(
-    Init(
-        InitConfigSets(ICR=["install", "configure", "run"]),
-        install=install,
-        configure=InitConfig(
-            # packages=packages,
-            # groups=groups,
-            # users=users,
-            # sources=sources,
-            # files=InitFiles({}),
-            # commands=commands,
-            # services=InitServices({}),
-        ),
-        run=InitConfig(
-            # packages=packages,
-            # groups=groups,
-            # users=users,
-            # sources=sources,
-            # files=InitFiles({}),
-            #commands={
-                #"000-run": {
-                    #"command": "sudo bin/taskmanager.sh start",
-                    #"cwd": "/opt/flink-1.0.3"
-                #}
-            #},
-            # services=InitServices({}),
-        ),
+
+
+def tm_metadata(**kwargs):
+    return Metadata(Init(
+            InitConfigSets(ICR=["install", "configure", "run"]),
+            install=install_flink_binaries,
+            configure=InitConfig(
+                # packages=packages,
+                # groups=groups,
+                # users=users,
+                # sources=sources,
+                files=InitFiles({
+                    "/opt/flink/conf/flink-conf.yaml": InitFile(
+                        content=Join("", [
+                            "jobmanager.rpc.address: ",
+                            GetAtt(kwargs["jm_ref"], "PrivateDnsName"),
+                            "\n",
+                            "jobmanager.rpc.port: 6123\n",
+                            "jobmanager.heap.mb: 256\n",
+                            "taskmanager.heap.mb: 512\n",
+                            "taskmanager.numberOfTaskSlots: 1\n",
+                            "taskmanager.memory.preallocate: false\n",
+                            "parallelism.default: 1\n",
+                            "jobmanager.web.port: 8081\n",
+                        ])
+                    )
+                }),
+                # commands=commands,
+                # services=InitServices({}),
+            ),
+            run=InitConfig(
+                # packages=packages,
+                # groups=groups,
+                # users=users,
+                # sources=sources,
+                # files=InitFiles({}),
+                commands={
+                    "000-run": {
+                        "command": "sudo bin/taskmanager.sh start",
+                        "cwd": "/opt/flink"
+                    }
+                },
+                # services=InitServices({}),
+            ),
+        )
     )
-)

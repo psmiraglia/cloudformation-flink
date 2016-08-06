@@ -249,6 +249,7 @@ FlinkVersion2Env = {
     },
 }
 
+
 def add_mappings(t):
     t.add_mapping("AWSInstanceType2Arch", AWSInstanceType2Arch)
     t.add_mapping("AWSInstanceType2NATArch", AWSInstanceType2NATArch)
