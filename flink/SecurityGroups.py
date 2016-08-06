@@ -39,7 +39,7 @@ sg_ssh = SecurityGroup(
             CidrIp=Ref(Parameters.ssh_location)
         )
     ],
-    VpcId=Ref(Networking.vpc_flink)
+    # VpcId=Ref(Networking.vpc_flink)
 )
 
 sg_jobmanager = SecurityGroup(
@@ -59,14 +59,14 @@ sg_jobmanager = SecurityGroup(
             CidrIp=Ref(Parameters.http_location)
         )
     ],
-    VpcId=Ref(Networking.vpc_flink)
+    # VpcId=Ref(Networking.vpc_flink)
 )
 
 sg_taskmanager = SecurityGroup(
     "TaskManagerSecurityGroup",
     GroupDescription="Regulates the accesses to TaskManager",
     SecurityGroupIngress=[],
-    VpcId=Ref(Networking.vpc_flink)
+    # VpcId=Ref(Networking.vpc_flink)
 )
 
 

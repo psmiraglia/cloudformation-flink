@@ -138,6 +138,23 @@ jobmanager_rpc_location = Parameter(
                            "of the form x.x.x.x/x")
 )
 
+flink_version = Parameter(
+    "FlinkVersion",
+    Description="Flink's version to install",
+    Type="String",
+    Default="1.0.3-hadoop27-scala2.11",
+    AllowedValues=[
+        "1.0.3-hadoop2-scala2.10",
+        "1.0.3-hadoop2-scala2.11",
+        "1.0.3-hadoop24-scala2.10",
+        "1.0.3-hadoop24-scala2.11",
+        "1.0.3-hadoop26-scala2.10",
+        "1.0.3-hadoop26-scala2.11",
+        "1.0.3-hadoop27-scala2.10",
+        "1.0.3-hadoop27-scala2.11",
+    ]
+)
+
 
 def add_parameters(t):
     t.add_parameter(instance_type)
@@ -145,3 +162,4 @@ def add_parameters(t):
     t.add_parameter(ssh_location)
     t.add_parameter(http_location)
     t.add_parameter(jobmanager_rpc_location)
+    t.add_parameter(flink_version)
