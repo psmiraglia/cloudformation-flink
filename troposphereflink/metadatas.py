@@ -40,9 +40,9 @@ import parameters
 install = InitConfig(
     sources={
         "/opt": FindInMap(
-            "AWSRegion2FlinkBinary",
-            Ref("AWS::Region"),
-            Ref(parameters.flink_version)
+            "FlinkVersion2Env",
+            Ref(parameters.flink_version),
+            "BINURL"
         )
     }
 )
@@ -70,8 +70,14 @@ jm_metadata = Metadata(
             # files=InitFiles({}),
             commands={
                 "000-run": {
-                    "command": "sudo bin/jobmanager.sh start cluster",
-                    "cwd": "/opt/flink-1.0.3"
+                    "command": "sudo $FLINK_HOME/bin/jobmanager.sh start local",
+                    "env": {
+                        "FLINK_HOME": FindInMap(
+                            "FlinkVersion2Env",
+                            Ref(parameters.flink_version),
+                            "FLINKHOME"
+                        )
+                    }
                 }
             },
             # services=InitServices({}),
@@ -99,12 +105,12 @@ tm_metadata = Metadata(
             # users=users,
             # sources=sources,
             # files=InitFiles({}),
-            commands={
-                "000-run": {
-                    "command": "sudo bin/taskmanager.sh start",
-                    "cwd": "/opt/flink-1.0.3"
-                }
-            },
+            #commands={
+                #"000-run": {
+                    #"command": "sudo bin/taskmanager.sh start",
+                    #"cwd": "/opt/flink-1.0.3"
+                #}
+            #},
             # services=InitServices({}),
         ),
     )

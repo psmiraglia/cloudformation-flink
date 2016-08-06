@@ -24,61 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from troposphere import FindInMap
-from troposphere import Parameter
-from troposphere import Ref
-from troposphere import Template
-from troposphereflink import instances
-from troposphereflink import mappings
-from troposphereflink import networking
-from troposphereflink import outputs
-from troposphereflink import parameters
-from troposphereflink import securitygroups
+from troposphereflink import templates
 import argparse
-import datetime
-import troposphere.ec2 as ec2
-
-TEMPLATE_DESCRIPTION = "Composes a Flink cluster on AWS"
-TEMPLATE_VERSION = "2010-09-09"
-
-
-def generate_template(tms=1):
-    t = Template()
-
-    t.add_description(TEMPLATE_DESCRIPTION)
-    t.add_version(TEMPLATE_VERSION)
-    t.add_metadata({
-        'LastUpdated': datetime.datetime.now().strftime('%c')
-    })
-
-    # mappings
-    mappings.add_mappings(t)
-
-    # parameters
-    parameters.add_parameters(t)
-
-    # networking resources (temporarily disabled)
-    #networking.add_resources(t)
-
-    # security groups
-    securitygroups.add_resources(t)
-
-    job_manager = t.add_resource(instances.job_manager())
-    prefix = "JobManager"
-    t.add_output(outputs.instance_id(job_manager, prefix))
-    t.add_output(outputs.az(job_manager, prefix))
-    t.add_output(outputs.public_dns(job_manager, prefix))
-    t.add_output(outputs.public_ip(job_manager, prefix))
-
-    for n in range(0, tms):
-        i = t.add_resource(instances.task_manager(n))
-        prefix = "TaskManager"
-        t.add_output(outputs.instance_id(i, prefix, n))
-        t.add_output(outputs.az(i, prefix, n))
-        t.add_output(outputs.public_dns(i, prefix, n))
-        t.add_output(outputs.public_ip(i, prefix, n))
-
-    return t
 
 
 def main():
@@ -94,13 +41,22 @@ def main():
         "-o",
         "--output",
         help="Output template file")
+    parser.add_argument(
+        "-V",
+        "--with-vpc",
+        help="Enable VPC",
+        action="store_true")
     args = parser.parse_args()
 
     tms = int(args.tms)
     output = args.output
+    with_vpc = args.with_vpc
 
-    t = generate_template(tms)
-    template = t.to_json()
+    template = ""
+    if with_vpc:
+        template = templates.with_vpc(tms)
+    else:
+        template = templates.without_vpc(tms)
 
     if output is None:
         print(template)
