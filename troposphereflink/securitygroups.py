@@ -25,8 +25,8 @@ SOFTWARE.
 from troposphere import Ref
 from troposphere.ec2 import SecurityGroup
 from troposphere.ec2 import SecurityGroupRule
-import Networking
-import Parameters
+import networking
+import parameters
 
 sg_ssh = SecurityGroup(
     "SSHSecurityGroup",
@@ -36,10 +36,10 @@ sg_ssh = SecurityGroup(
             IpProtocol="tcp",
             FromPort="22",
             ToPort="22",
-            CidrIp=Ref(Parameters.ssh_location)
+            CidrIp=Ref(parameters.ssh_location)
         )
     ],
-    # VpcId=Ref(Networking.vpc_flink)
+    # VpcId=Ref(networking.vpc_flink)
 )
 
 sg_jobmanager = SecurityGroup(
@@ -50,23 +50,23 @@ sg_jobmanager = SecurityGroup(
             IpProtocol="tcp",
             FromPort="6123",
             ToPort="6123",
-            CidrIp=Ref(Parameters.jobmanager_rpc_location)
+            CidrIp=Ref(parameters.jobmanager_rpc_location)
         ),
         SecurityGroupRule(
             IpProtocol="tcp",
             FromPort="8081",
             ToPort="8081",
-            CidrIp=Ref(Parameters.http_location)
+            CidrIp=Ref(parameters.http_location)
         )
     ],
-    # VpcId=Ref(Networking.vpc_flink)
+    # VpcId=Ref(networking.vpc_flink)
 )
 
 sg_taskmanager = SecurityGroup(
     "TaskManagerSecurityGroup",
     GroupDescription="Regulates the accesses to TaskManager",
     SecurityGroupIngress=[],
-    # VpcId=Ref(Networking.vpc_flink)
+    # VpcId=Ref(networking.vpc_flink)
 )
 
 

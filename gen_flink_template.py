@@ -24,16 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from flink import Instances
-from flink import Mappings
-from flink import Networking
-from flink import Outputs
-from flink import Parameters
-from flink import SecurityGroups
 from troposphere import FindInMap
 from troposphere import Parameter
 from troposphere import Ref
 from troposphere import Template
+from troposphereflink import instances
+from troposphereflink import mappings
+from troposphereflink import networking
+from troposphereflink import outputs
+from troposphereflink import parameters
+from troposphereflink import securitygroups
 import argparse
 import datetime
 import troposphere.ec2 as ec2
@@ -52,31 +52,31 @@ def generate_template(tms=1):
     })
 
     # mappings
-    Mappings.add_mappings(t)
+    mappings.add_mappings(t)
 
     # parameters
-    Parameters.add_parameters(t)
+    parameters.add_parameters(t)
 
     # networking resources (temporarily disabled)
-    #Networking.add_resources(t)
+    #networking.add_resources(t)
 
     # security groups
-    SecurityGroups.add_resources(t)
+    securitygroups.add_resources(t)
 
-    job_manager = t.add_resource(Instances.job_manager())
+    job_manager = t.add_resource(instances.job_manager())
     prefix = "JobManager"
-    t.add_output(Outputs.instance_id(job_manager, prefix))
-    t.add_output(Outputs.az(job_manager, prefix))
-    t.add_output(Outputs.public_dns(job_manager, prefix))
-    t.add_output(Outputs.public_ip(job_manager, prefix))
+    t.add_output(outputs.instance_id(job_manager, prefix))
+    t.add_output(outputs.az(job_manager, prefix))
+    t.add_output(outputs.public_dns(job_manager, prefix))
+    t.add_output(outputs.public_ip(job_manager, prefix))
 
     for n in range(0, tms):
-        i = t.add_resource(Instances.task_manager(n))
+        i = t.add_resource(instances.task_manager(n))
         prefix = "TaskManager"
-        t.add_output(Outputs.instance_id(i, prefix, n))
-        t.add_output(Outputs.az(i, prefix, n))
-        t.add_output(Outputs.public_dns(i, prefix, n))
-        t.add_output(Outputs.public_ip(i, prefix, n))
+        t.add_output(outputs.instance_id(i, prefix, n))
+        t.add_output(outputs.az(i, prefix, n))
+        t.add_output(outputs.public_dns(i, prefix, n))
+        t.add_output(outputs.public_ip(i, prefix, n))
 
     return t
 
