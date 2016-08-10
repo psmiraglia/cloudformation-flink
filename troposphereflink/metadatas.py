@@ -67,7 +67,7 @@ def jm_metadata(**kwargs):
                 files=InitFiles({
                     "/opt/flink/conf/flink-conf.yaml": InitFile(
                         content=Join("", [
-                            "jobmanager.rpc.address: localhost\n",
+                            "jobmanager.rpc.address: %HOSTNAME%\n",
                             "jobmanager.rpc.port: 6123\n",
                             "jobmanager.heap.mb: 256\n",
                             "taskmanager.heap.mb: 512\n",
@@ -78,7 +78,12 @@ def jm_metadata(**kwargs):
                         ])
                     )
                 }),
-                # commands=commands,
+                commands={
+                    "000-set-binding-hostname": {
+                        "command": 'sudo sed -i.bak "s/%HOSTNAME%/`curl http://169.254.169.254/latest/meta-data/local-ipv4`/g" conf/flink-conf.yaml',
+                        "cwd": "/opt/flink"
+                    },
+                },
                 # services=InitServices({}),
             ),
             run=InitConfig(
@@ -114,7 +119,7 @@ def tm_metadata(**kwargs):
                     "/opt/flink/conf/flink-conf.yaml": InitFile(
                         content=Join("", [
                             "jobmanager.rpc.address: ",
-                            GetAtt(kwargs["jm_ref"], "PrivateDnsName"),
+                            GetAtt(kwargs["jm_ref"], "PrivateIp"),
                             "\n",
                             "jobmanager.rpc.port: 6123\n",
                             "jobmanager.heap.mb: 256\n",
