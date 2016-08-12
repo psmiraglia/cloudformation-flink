@@ -39,7 +39,7 @@ JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
 
 
-def task_manager(n, jm_ref, within_vpc=False):
+def task_manager(n, jobmanager, within_vpc=False):
     iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
     return Instance(
         iname,
@@ -58,7 +58,7 @@ def task_manager(n, jm_ref, within_vpc=False):
                 "Arch"
             )
         ),
-        Metadata=metadatas.taskmanager(jm_ref=jm_ref),
+        Metadata=metadatas.taskmanager(jobmanager=jobmanager),
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",

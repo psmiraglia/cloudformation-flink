@@ -108,6 +108,9 @@ def jobmanager(**kwargs):
 
 
 def taskmanager(**kwargs):
+    # temp
+    jobmanager = kwargs["jobmanager"]
+    #
     return Metadata(Init(
             InitConfigSets(InstallConfigureRun=[
                 "install",
@@ -119,7 +122,7 @@ def taskmanager(**kwargs):
                     "/opt/flink/conf/flink-conf.yaml": InitFile(
                         content=Join("", [
                             "jobmanager.rpc.address: ",
-                            GetAtt(kwargs["jm_ref"], "PrivateIp"),
+                            GetAtt(jobmanager, "PrivateIp"),
                             "\n",
                             "jobmanager.rpc.port: 6123\n",
                             "jobmanager.heap.mb: 256\n",
