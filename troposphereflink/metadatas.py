@@ -40,13 +40,19 @@ import parameters
 
 install_flink_binaries = InitConfig(
     sources={
-        "/opt": FindInMap("FlinkVersion2Env", Ref(parameters.flink_version),
-                          "BINURL")
+        "/opt": FindInMap(
+            "FlinkVersion2Env",
+            Ref(parameters.flink_version),
+            "binurl"
+        )
     },
     files=InitFiles({
         "/opt/flink": InitFile(
-            content=FindInMap("FlinkVersion2Env",
-                              Ref(parameters.flink_version), "FLINKHOME"),
+            content=FindInMap(
+                "FlinkVersion2Env",
+                Ref(parameters.flink_version),
+                "dirname"
+            ),
             mode="120000"
         )
     }),
@@ -57,13 +63,12 @@ install_flink_binaries = InitConfig(
 
 def jm_metadata(**kwargs):
     return Metadata(Init(
-            InitConfigSets(ICR=["install", "configure", "run"]),
+            InitConfigSets(InstallConfigureRun=[
+                "install",
+                "configure",
+                "run"]),
             install=install_flink_binaries,
             configure=InitConfig(
-                # packages=packages,
-                # groups=groups,
-                # users=users,
-                # sources=sources,
                 files=InitFiles({
                     "/opt/flink/conf/flink-conf.yaml": InitFile(
                         content=Join("", [
@@ -80,25 +85,21 @@ def jm_metadata(**kwargs):
                 }),
                 commands={
                     "000-set-binding-hostname": {
-                        "command": 'sudo sed -i.bak "s/%HOSTNAME%/`curl http://169.254.169.254/latest/meta-data/local-ipv4`/g" conf/flink-conf.yaml',
+                        "command": (
+                            'sudo sed -i.bak "s/%HOSTNAME%/`' +
+                            'curl http://169.254.169.254/latest/' +
+                            'meta-data/local-ipv4`/g" conf/flink-conf.yaml'),
                         "cwd": "/opt/flink"
                     },
                 },
-                # services=InitServices({}),
             ),
             run=InitConfig(
-                # packages=packages,
-                # groups=groups,
-                # users=users,
-                # sources=sources,
-                # files=InitFiles({}),
                 commands={
                     "000-run": {
                         "command": "sudo bin/jobmanager.sh start cluster",
                         "cwd": "/opt/flink"
                     }
                 },
-                # services=InitServices({}),
             ),
         )
     )
@@ -111,10 +112,6 @@ def tm_metadata(**kwargs):
             InitConfigSets(ICR=["install", "configure", "run"]),
             install=install_flink_binaries,
             configure=InitConfig(
-                # packages=packages,
-                # groups=groups,
-                # users=users,
-                # sources=sources,
                 files=InitFiles({
                     "/opt/flink/conf/flink-conf.yaml": InitFile(
                         content=Join("", [
@@ -131,22 +128,14 @@ def tm_metadata(**kwargs):
                         ])
                     )
                 }),
-                # commands=commands,
-                # services=InitServices({}),
             ),
             run=InitConfig(
-                # packages=packages,
-                # groups=groups,
-                # users=users,
-                # sources=sources,
-                # files=InitFiles({}),
                 commands={
                     "000-run": {
                         "command": "sudo bin/taskmanager.sh start",
                         "cwd": "/opt/flink"
                     }
                 },
-                # services=InitServices({}),
             ),
         )
     )
