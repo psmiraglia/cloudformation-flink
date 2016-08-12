@@ -109,7 +109,10 @@ def jm_metadata(**kwargs):
 
 def tm_metadata(**kwargs):
     return Metadata(Init(
-            InitConfigSets(ICR=["install", "configure", "run"]),
+            InitConfigSets(InstallConfigureRun=[
+                "install",
+                "configure",
+                "run"]),
             install=install_flink_binaries,
             configure=InitConfig(
                 files=InitFiles({
