@@ -58,7 +58,7 @@ def task_manager(n, jm_ref, within_vpc=False):
                 "Arch"
             )
         ),
-        Metadata=metadatas.tm_metadata(jm_ref=jm_ref),
+        Metadata=metadatas.taskmanager(jm_ref=jm_ref),
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",
@@ -104,7 +104,7 @@ def job_manager(n=0, within_vpc=False):
                 "Arch"
             )
         ),
-        Metadata=metadatas.jm_metadata(),
+        Metadata=metadatas.jobmanager(),
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",

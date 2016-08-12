@@ -61,7 +61,7 @@ install_flink_binaries = InitConfig(
 # JobManager
 
 
-def jm_metadata(**kwargs):
+def jobmanager(**kwargs):
     return Metadata(Init(
             InitConfigSets(InstallConfigureRun=[
                 "install",
@@ -107,7 +107,7 @@ def jm_metadata(**kwargs):
 # TaskManager
 
 
-def tm_metadata(**kwargs):
+def taskmanager(**kwargs):
     return Metadata(Init(
             InitConfigSets(InstallConfigureRun=[
                 "install",
