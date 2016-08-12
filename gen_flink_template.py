@@ -26,37 +26,68 @@ SOFTWARE.
 
 from troposphereflink import templates
 import argparse
+import troposphereflink
+import sys
+
+DEFAULT_TASK_MANAGERS = 2
+DEFAULT_JOB_MANAGERS = 1
 
 
 def main():
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=("Generates an AWS CloudFormation template " +
+                     "to setup a Flink cluster."))
+
+    parser.add_argument(
+        "-v",
+        "--version",
+        help="show version and exit",
+        action="store_true")
+
     parser.add_argument(
         "-t",
-        "--tms",
-        default="1",
-        help="Number of TaskManager's"
+        "--task-managers",
+        type=int,
+        default=DEFAULT_TASK_MANAGERS,
+        help=("number of TaskManager instances in the cluster (defautl: %d)" %
+              DEFAULT_TASK_MANAGERS)
     )
+
+    parser.add_argument(
+        "-j",
+        "--job-managers",
+        type=int,
+        default=DEFAULT_JOB_MANAGERS,
+        help=("number of JobManager instances in the cluster (defautl: %d)" %
+              DEFAULT_JOB_MANAGERS)
+    )
+
     parser.add_argument(
         "-o",
         "--output",
-        help="Output template file")
+        help="CloudFormation template OUTPUT file")
+
     parser.add_argument(
-        "-V",
-        "--with-vpc",
-        help="Enable VPC",
+        "--within-vpc",
+        help="create the cluster within a VPC",
         action="store_true")
+
     args = parser.parse_args()
 
-    tms = int(args.tms)
+    if args.version:
+        print(troposphereflink.VERSION)
+        sys.exit(0)
+
+    tms = args.task_managers
     output = args.output
-    with_vpc = args.with_vpc
+    within_vpc = args.within_vpc
 
     template = ""
-    if with_vpc:
-        template = templates.with_vpc(tms)
+    if within_vpc:
+        template = templates.within_vpc(tms)
     else:
-        template = templates.without_vpc(tms)
+        template = templates.simple(tms)
 
     if output is None:
         print(template)

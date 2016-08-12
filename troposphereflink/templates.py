@@ -36,7 +36,7 @@ TEMPLATE_VERSION = "2010-09-09"
 LAST_UPDATE = datetime.datetime.now().strftime('%c')
 
 
-def _generate_template(tms=1, with_vpc=False):
+def _generate_template(tms=1, within_vpc=False):
     t = Template()
 
     t.add_description(TEMPLATE_DESCRIPTION)
@@ -52,11 +52,11 @@ def _generate_template(tms=1, with_vpc=False):
     # security groups
     securitygroups.add_resources(t)
 
-    if with_vpc:
+    if within_vpc:
         # networking resources
         networking.add_resources(t)
 
-    job_manager = t.add_resource(instances.job_manager(with_vpc=with_vpc))
+    job_manager = t.add_resource(instances.job_manager(within_vpc=within_vpc))
     prefix = "JobManager"
     t.add_output(outputs.instance_id(job_manager, prefix))
     t.add_output(outputs.az(job_manager, prefix))
@@ -64,7 +64,7 @@ def _generate_template(tms=1, with_vpc=False):
     t.add_output(outputs.public_ip(job_manager, prefix))
 
     for n in range(0, tms):
-        i = t.add_resource(instances.task_manager(n, job_manager, with_vpc))
+        i = t.add_resource(instances.task_manager(n, job_manager, within_vpc))
         prefix = "TaskManager"
         t.add_output(outputs.instance_id(i, prefix, n))
         t.add_output(outputs.az(i, prefix, n))
@@ -74,9 +74,9 @@ def _generate_template(tms=1, with_vpc=False):
     return t.to_json()
 
 
-def without_vpc(tms=1):
-    return _generate_template(tms, with_vpc=False)
+def simple(tms=1):
+    return _generate_template(tms, within_vpc=False)
 
 
-def with_vpc(tms=1):
-    return _generate_template(tms, with_vpc=True)
+def within_vpc(tms=1):
+    return _generate_template(tms, within_vpc=True)
