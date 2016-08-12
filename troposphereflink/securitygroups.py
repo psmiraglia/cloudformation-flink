@@ -28,7 +28,7 @@ from troposphere.ec2 import SecurityGroupRule
 import networking
 import parameters
 
-sg_ssh = SecurityGroup(
+ssh = SecurityGroup(
     "SSHSecurityGroup",
     GroupDescription="Enable SSH access via port 22",
     SecurityGroupIngress=[
@@ -42,7 +42,7 @@ sg_ssh = SecurityGroup(
     # VpcId=Ref(networking.vpc_flink)
 )
 
-sg_jobmanager = SecurityGroup(
+jobmanager = SecurityGroup(
     "JobManagerSecurityGroup",
     GroupDescription="Regulates the accesses to JobManager",
     SecurityGroupIngress=[
@@ -50,7 +50,7 @@ sg_jobmanager = SecurityGroup(
             IpProtocol="tcp",
             FromPort="6123",
             ToPort="6123",
-            CidrIp=Ref(parameters.jobmanager_rpc_location)
+            CidrIp="0.0.0.0/0"
         ),
         SecurityGroupRule(
             IpProtocol="tcp",
@@ -62,7 +62,7 @@ sg_jobmanager = SecurityGroup(
     # VpcId=Ref(networking.vpc_flink)
 )
 
-sg_taskmanager = SecurityGroup(
+taskmanager = SecurityGroup(
     "TaskManagerSecurityGroup",
     GroupDescription="Regulates the accesses to TaskManager",
     SecurityGroupIngress=[],
@@ -71,6 +71,6 @@ sg_taskmanager = SecurityGroup(
 
 
 def add_resources(t):
-    t.add_resource(sg_ssh)
-    t.add_resource(sg_jobmanager)
-    t.add_resource(sg_taskmanager)
+    t.add_resource(ssh)
+    t.add_resource(jobmanager)
+    t.add_resource(taskmanager)

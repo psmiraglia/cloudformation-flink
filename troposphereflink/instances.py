@@ -43,10 +43,10 @@ def task_manager(n, jm_ref, with_vpc=False):
     iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
     return Instance(
         iname,
-        InstanceType=Ref(parameters.instance_type),
+        InstanceType=Ref(parameters.taskmanager_instance_type),
         SecurityGroups=[
-            Ref(securitygroups.sg_ssh),
-            Ref(securitygroups.sg_taskmanager),
+            Ref(securitygroups.ssh),
+            Ref(securitygroups.taskmanager),
         ],
         KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
@@ -54,7 +54,7 @@ def task_manager(n, jm_ref, with_vpc=False):
             Ref("AWS::Region"),
             FindInMap(
                 "AWSInstanceType2Arch",
-                Ref(parameters.instance_type),
+                Ref(parameters.taskmanager_instance_type),
                 "Arch"
             )
         ),
@@ -68,7 +68,7 @@ def task_manager(n, jm_ref, with_vpc=False):
                 "         --stack ",
                 Ref("AWS::StackName"),
                 "         --resource %s " % iname,
-                "         --configsets ICR ",
+                "         --configsets InstallConfigureRun ",
                 "         --region ",
                 Ref("AWS::Region"),
                 "\n",
@@ -89,10 +89,10 @@ def job_manager(n=0, with_vpc=False):
     iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
     return Instance(
         iname,
-        InstanceType=Ref(parameters.instance_type),
+        InstanceType=Ref(parameters.jobmanager_instance_type),
         SecurityGroups=[
-            Ref(securitygroups.sg_ssh),
-            Ref(securitygroups.sg_jobmanager),
+            Ref(securitygroups.ssh),
+            Ref(securitygroups.jobmanager),
         ],
         KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
@@ -100,7 +100,7 @@ def job_manager(n=0, with_vpc=False):
             Ref("AWS::Region"),
             FindInMap(
                 "AWSInstanceType2Arch",
-                Ref(parameters.instance_type),
+                Ref(parameters.jobmanager_instance_type),
                 "Arch"
             )
         ),
@@ -114,7 +114,7 @@ def job_manager(n=0, with_vpc=False):
                 "         --stack ",
                 Ref("AWS::StackName"),
                 "         --resource %s " % iname,
-                "         --configsets ICR ",
+                "         --configsets InstallConfigureRun ",
                 "         --region ",
                 Ref("AWS::Region"),
                 "\n",
