@@ -39,7 +39,7 @@ JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
 
 
-def task_manager(n, jm_ref, with_vpc=False):
+def task_manager(n, jm_ref, within_vpc=False):
     iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
     return Instance(
         iname,
@@ -85,7 +85,7 @@ def task_manager(n, jm_ref, with_vpc=False):
     )
 
 
-def job_manager(n=0, with_vpc=False):
+def job_manager(n=0, within_vpc=False):
     iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
     return Instance(
         iname,
