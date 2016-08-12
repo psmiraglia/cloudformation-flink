@@ -57,7 +57,7 @@ def _generate_template(tms=1, within_vpc=False):
         networking.add_resources(t)
 
     jobmanager = t.add_resource(instances.jobmanager(within_vpc=within_vpc))
-    prefix = "JobManager"
+    prefix = "JobManager00"
     t.add_output(outputs.instance_id(jobmanager, prefix))
     t.add_output(outputs.az(jobmanager, prefix))
     t.add_output(outputs.public_dns(jobmanager, prefix))
@@ -65,11 +65,11 @@ def _generate_template(tms=1, within_vpc=False):
 
     for n in range(0, tms):
         i = t.add_resource(instances.taskmanager(n, jobmanager, within_vpc))
-        prefix = "TaskManager"
-        t.add_output(outputs.instance_id(i, prefix, n))
-        t.add_output(outputs.az(i, prefix, n))
-        t.add_output(outputs.public_dns(i, prefix, n))
-        t.add_output(outputs.public_ip(i, prefix, n))
+        prefix = "TaskManager%2.2d" % n
+        t.add_output(outputs.instance_id(i, prefix))
+        t.add_output(outputs.az(i, prefix))
+        t.add_output(outputs.public_dns(i, prefix))
+        t.add_output(outputs.public_ip(i, prefix))
 
     return t.to_json()
 

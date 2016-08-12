@@ -27,33 +27,33 @@ from troposphere import Output
 from troposphere import Ref
 
 
-def instance_id(ref, prefix, n=0):
+def instance_id(ref, prefix):
     return Output(
-        "%s%2.2dInstanceId" % (prefix, n),
+        "%sInstanceId" % (prefix),
         Description="InstanceId of the newly created EC2 instance",
         Value=Ref(ref)
     )
 
 
-def az(ref, prefix, n=0):
+def az(ref, prefix):
     return Output(
-        "%s%2.2dAvailabilityZone" % (prefix, n),
+        "%sAvailabilityZone" % (prefix),
         Description="availability Zone of the newly created EC2 instance",
         Value=GetAtt(ref, "AvailabilityZone")
     )
 
 
-def public_dns(ref, prefix, n=0):
+def public_dns(ref, prefix):
     return Output(
-        "%s%2.2dPublicDnsName" % (prefix, n),
+        "%sPublicDnsName" % (prefix),
         Description="Public DNSName of the newly created EC2 instance",
         Value=GetAtt(ref, "PublicDnsName")
     )
 
 
-def public_ip(ref, prefix, n=0):
+def public_ip(ref, prefix):
     return Output(
-        "%s%2.2dPublicIp" % (prefix, n),
+        "%sPublicIp" % (prefix),
         Description="Public IP address of the newly created EC2 instance",
         Value=GetAtt(ref, "PublicIp")
     )
