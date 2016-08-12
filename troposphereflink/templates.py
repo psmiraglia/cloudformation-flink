@@ -56,15 +56,15 @@ def _generate_template(tms=1, within_vpc=False):
         # networking resources
         networking.add_resources(t)
 
-    job_manager = t.add_resource(instances.job_manager(within_vpc=within_vpc))
+    jobmanager = t.add_resource(instances.jobmanager(within_vpc=within_vpc))
     prefix = "JobManager"
-    t.add_output(outputs.instance_id(job_manager, prefix))
-    t.add_output(outputs.az(job_manager, prefix))
-    t.add_output(outputs.public_dns(job_manager, prefix))
-    t.add_output(outputs.public_ip(job_manager, prefix))
+    t.add_output(outputs.instance_id(jobmanager, prefix))
+    t.add_output(outputs.az(jobmanager, prefix))
+    t.add_output(outputs.public_dns(jobmanager, prefix))
+    t.add_output(outputs.public_ip(jobmanager, prefix))
 
     for n in range(0, tms):
-        i = t.add_resource(instances.task_manager(n, job_manager, within_vpc))
+        i = t.add_resource(instances.taskmanager(n, jobmanager, within_vpc))
         prefix = "TaskManager"
         t.add_output(outputs.instance_id(i, prefix, n))
         t.add_output(outputs.az(i, prefix, n))
