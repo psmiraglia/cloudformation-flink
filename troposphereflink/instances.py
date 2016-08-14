@@ -31,7 +31,6 @@ from troposphere.ec2 import NetworkInterfaceProperty
 from troposphere.policies import CreationPolicy
 from troposphere.policies import ResourceSignal
 import metadatas
-import networking
 import parameters
 import securitygroups
 
@@ -39,15 +38,12 @@ JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
 
 
-def task_manager(n, jm_ref, within_vpc=False):
-    iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
+def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False):
+    iname = "%s%2.2d" % (TASK_MANAGER_INAME, index)
     return Instance(
         iname,
         InstanceType=Ref(parameters.taskmanager_instance_type),
-        SecurityGroups=[
-            Ref(securitygroups.ssh),
-            Ref(securitygroups.taskmanager),
-        ],
+        SecurityGroups=securitygroups,
         KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
@@ -58,7 +54,7 @@ def task_manager(n, jm_ref, within_vpc=False):
                 "Arch"
             )
         ),
-        Metadata=metadatas.tm_metadata(jm_ref=jm_ref),
+        Metadata=metadatas.taskmanager(jobmanager=jobmanager),
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",
@@ -85,15 +81,12 @@ def task_manager(n, jm_ref, within_vpc=False):
     )
 
 
-def job_manager(n=0, within_vpc=False):
-    iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
+def jobmanager(index=0, securitygroups=[], within_vpc=False):
+    iname = "%s%2.2d" % (JOB_MANAGER_INAME, index)
     return Instance(
         iname,
         InstanceType=Ref(parameters.jobmanager_instance_type),
-        SecurityGroups=[
-            Ref(securitygroups.ssh),
-            Ref(securitygroups.jobmanager),
-        ],
+        SecurityGroups=securitygroups,
         KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
@@ -104,7 +97,7 @@ def job_manager(n=0, within_vpc=False):
                 "Arch"
             )
         ),
-        Metadata=metadatas.jm_metadata(),
+        Metadata=metadatas.jobmanager(),
         UserData=Base64(
             Join('', [
                 "#!/bin/bash -xe\n",
