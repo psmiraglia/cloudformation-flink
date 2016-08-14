@@ -25,7 +25,6 @@ SOFTWARE.
 from troposphere import Ref
 from troposphere.ec2 import SecurityGroup
 from troposphere.ec2 import SecurityGroupRule
-import networking
 import parameters
 
 

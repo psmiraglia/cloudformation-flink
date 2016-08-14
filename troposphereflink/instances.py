@@ -31,7 +31,6 @@ from troposphere.ec2 import NetworkInterfaceProperty
 from troposphere.policies import CreationPolicy
 from troposphere.policies import ResourceSignal
 import metadatas
-import networking
 import parameters
 import securitygroups
 
