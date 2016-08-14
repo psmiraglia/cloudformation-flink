@@ -39,15 +39,12 @@ JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
 
 
-def taskmanager(n, jobmanager, within_vpc=False):
-    iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
+def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False):
+    iname = "%s%2.2d" % (TASK_MANAGER_INAME, index)
     return Instance(
         iname,
         InstanceType=Ref(parameters.taskmanager_instance_type),
-        SecurityGroups=[
-            Ref(securitygroups.ssh),
-            Ref(securitygroups.taskmanager),
-        ],
+        SecurityGroups=securitygroups,
         KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
@@ -85,15 +82,12 @@ def taskmanager(n, jobmanager, within_vpc=False):
     )
 
 
-def jobmanager(n=0, within_vpc=False):
-    iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
+def jobmanager(index=0, securitygroups=[], within_vpc=False):
+    iname = "%s%2.2d" % (JOB_MANAGER_INAME, index)
     return Instance(
         iname,
         InstanceType=Ref(parameters.jobmanager_instance_type),
-        SecurityGroups=[
-            Ref(securitygroups.ssh),
-            Ref(securitygroups.jobmanager),
-        ],
+        SecurityGroups=securitygroups,
         KeyName=Ref(parameters.key_name),
         ImageId=FindInMap(
             "AWSRegionArch2AMI",
