@@ -167,6 +167,62 @@ AWSRegionArch2AMI = {
 }
 
 FlinkVersion2Env = {
+    "flink1.1.1-hadoop27-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop27-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop27-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop27-scala_2.10.tgz"
+        )
+    },
+    "flink1.1.1-hadoop26-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop26-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop26-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop26-scala_2.10.tgz"
+        )
+    },
+    "flink1.1.1-hadoop24-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop24-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop24-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop24-scala_2.10.tgz"
+        )
+    },
+    "flink1.1.1-hadoop2-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop2-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop2-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop2-scala_2.10.tgz"
+        )
+    },
     "flink1.1.0-hadoop27-scala2.11": {
         "dirname": "flink-1.1.0",
         "binurl": (
@@ -281,9 +337,31 @@ FlinkVersion2Env = {
     },
 }
 
+FlinkCidrBlock = {
+    "vpc": {"CIDR": "10.77.0.0/16"},
+    "private": {"CIDR": "10.77.0.0/24"},
+    "public": {"CIDR": "10.77.1.0/24"},
+}
+
+AWSNATAMI = {
+    "ap-northeast-1": {"AMI": "ami-c7e016c7"},
+    "ap-northeast-2": {"AMI": "NOT-AVAILABLE"},
+    "ap-south-1": {"AMI": "NOT-AVAILABLE"},
+    "ap-southeast-1": {"AMI": "ami-b098a9e2"},
+    "ap-southeast-2": {"AMI": "ami-0fed9d35"},
+    "eu-central-1": {"AMI": "ami-3604392b"},
+    "eu-west-1": {"AMI": "ami-cb7de3bc"},
+    "sa-east-1": {"AMI": "ami-93fb408e"},
+    "us-east-1": {"AMI": "ami-c02b04a8"},
+    "us-west-1": {"AMI": "ami-67a54423"},
+    "us-west-2": {"AMI": "ami-2dae821d"},
+}
+
 
 def add_mappings(t):
     t.add_mapping("AWSInstanceType2Arch", AWSInstanceType2Arch)
     t.add_mapping("AWSInstanceType2NATArch", AWSInstanceType2NATArch)
     t.add_mapping("AWSRegionArch2AMI", AWSRegionArch2AMI)
     t.add_mapping("FlinkVersion2Env", FlinkVersion2Env)
+    t.add_mapping("FlinkCidrBlock", FlinkCidrBlock)
+    t.add_mapping("AWSNATAMI", AWSNATAMI)
