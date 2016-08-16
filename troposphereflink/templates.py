@@ -186,7 +186,7 @@ def _define_vpc(t, **kwargs):
     nat = t.add_resource(Instance(
         FLINK_NAT,
         SourceDestCheck=False,
-        InstanceType="t1.micro",
+        InstanceType=Ref(parameters.nat_instance_type),
         ImageId=FindInMap("AWSNATAMI", Ref("AWS::Region"), "AMI"),
         KeyName=Ref(parameters.key_name),
         NetworkInterfaces=[
