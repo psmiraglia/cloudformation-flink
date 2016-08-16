@@ -54,6 +54,7 @@ import securitygroups
 
 from commons import *
 
+
 def _define_vpc(t, **kwargs):
     vpc = t.add_resource(VPC(
         FLINK_VPC,
@@ -84,7 +85,7 @@ def _define_vpc(t, **kwargs):
         FLINK_PUBLIC_SUBNET,
         CidrBlock=FindInMap("FlinkCidrBlock", "public", "CIDR"),
         VpcId=Ref(vpc),
-        #DependsOn=[FLINK_VPC],
+        # DependsOn=[FLINK_VPC],
     ))
 
     # routes...
@@ -92,14 +93,14 @@ def _define_vpc(t, **kwargs):
     rt_pub = t.add_resource(RouteTable(
         FLINK_PUBLIC_ROUTE_TABLE,
         VpcId=Ref(vpc),
-        #DependsOn=[FLINK_VPC],
+        # DependsOn=[FLINK_VPC],
     ))
 
     t.add_resource(SubnetRouteTableAssociation(
         "FlinkPublicSubnetRouteTableAssociation",
         SubnetId=Ref(subnet_pub),
         RouteTableId=Ref(rt_pub),
-        #DependsOn=[FLINK_PUBLIC_SUBNET, FLINK_PUBLIC_ROUTE_TABLE],
+        # DependsOn=[FLINK_PUBLIC_SUBNET, FLINK_PUBLIC_ROUTE_TABLE],
     ))
 
     t.add_resource(Route(
@@ -107,7 +108,7 @@ def _define_vpc(t, **kwargs):
         RouteTableId=Ref(rt_pub),
         DestinationCidrBlock="0.0.0.0/0",
         GatewayId=Ref(igw),
-        #DependsOn=[FLINK_INTERNET_GATEWAY, FLINK_PUBLIC_ROUTE_TABLE]
+        # DependsOn=[FLINK_INTERNET_GATEWAY, FLINK_PUBLIC_ROUTE_TABLE]
     ))
 
     # acl...
@@ -132,7 +133,7 @@ def _define_vpc(t, **kwargs):
         FLINK_PRIVATE_SUBNET,
         CidrBlock=FindInMap("FlinkCidrBlock", "private", "CIDR"),
         VpcId=Ref(vpc),
-        #DependsOn=[FLINK_VPC]
+        # DependsOn=[FLINK_VPC]
     ))
 
     # routes...
@@ -140,16 +141,15 @@ def _define_vpc(t, **kwargs):
     rt_pri = t.add_resource(RouteTable(
         FLINK_PRIVATE_ROUTE_TABLE,
         VpcId=Ref(vpc),
-        #DependsOn=[FLINK_VPC]
+        # DependsOn=[FLINK_VPC]
     ))
 
     t.add_resource(SubnetRouteTableAssociation(
         "FlinkPrivateSubnetRouteTableAssociation",
         SubnetId=Ref(subnet_pri),
         RouteTableId=Ref(rt_pri),
-        #DependsOn=[FLINK_PRIVATE_SUBNET, FLINK_PRIVATE_ROUTE_TABLE]
+        # DependsOn=[FLINK_PRIVATE_SUBNET, FLINK_PRIVATE_ROUTE_TABLE]
     ))
-
 
     sg_nat = t.add_resource(SecurityGroup(
         FLINK_NAT_SECURITY_GROUP,
@@ -175,14 +175,13 @@ def _define_vpc(t, **kwargs):
                 CidrIp=Ref(parameters.ssh_location)
             ),
         ],
-        #SecurityGroupEgress=[
-            #SecurityGroupRule(
-                #IpProtocol="-1",
-                #CidrIp="0.0.0.0/0"
-            #),
-        #],
+        # SecurityGroupEgress=[
+        # SecurityGroupRule(
+        # IpProtocol="-1",
+        # CidrIp="0.0.0.0/0"
+        # ),
+        # ],
     ))
-
 
     nat = t.add_resource(Instance(
         FLINK_NAT,
@@ -200,14 +199,14 @@ def _define_vpc(t, **kwargs):
                 AssociatePublicIpAddress=True
             ),
         ],
-        #DependsOn=[
-            #FLINK_VPC,
-            #FLINK_INTERNET_GATEWAY,
-            #FLINK_VPC_GATEWAY_ATTACHMENT,
-            #FLINK_PUBLIC_SUBNET,
-            #FLINK_PUBLIC_ROUTE_TABLE,
-            #FLINK_NAT_SECURITY_GROUP
-        #],
+        # DependsOn=[
+        # FLINK_VPC,
+        # FLINK_INTERNET_GATEWAY,
+        # FLINK_VPC_GATEWAY_ATTACHMENT,
+        # FLINK_PUBLIC_SUBNET,
+        # FLINK_PUBLIC_ROUTE_TABLE,
+        # FLINK_NAT_SECURITY_GROUP
+        # ],
         UserData=Base64(Join("", [
             "#!/bin/bash -xe\n",
             "yum update -y aws-cfn-bootstrap\n",
@@ -223,8 +222,8 @@ def _define_vpc(t, **kwargs):
         CreationPolicy=CreationPolicy(
             ResourceSignal=ResourceSignal(Timeout="PT15M")
         )
-        #SecurityGroupIds=[Ref(sg_nat)],
-        #SubnetId=Ref(subnet_pub),
+        # SecurityGroupIds=[Ref(sg_nat)],
+        # SubnetId=Ref(subnet_pub),
     ))
 
     t.add_output(Output(
@@ -239,10 +238,7 @@ def _define_vpc(t, **kwargs):
         RouteTableId=Ref(rt_pri),
         DestinationCidrBlock="0.0.0.0/0",
         InstanceId=Ref(nat),
-        #DependsOn=[
-            #FLINK_PRIVATE_ROUTE_TABLE,
-            #FLINK_NAT
-        #]
+        # DependsOn=[FLINK_PRIVATE_ROUTE_TABLE, FLINK_NAT]
     ))
 
     # acl...
@@ -299,10 +295,10 @@ def _generate_template(tms=1, within_vpc=False):
     ))
 
     prefix = "JobManager00"
-    #t.add_output(outputs.instance_id(jobmanager, prefix))
-    #t.add_output(outputs.az(jobmanager, prefix))
-    #t.add_output(outputs.public_dns(jobmanager, prefix))
-    #t.add_output(outputs.public_ip(jobmanager, prefix))
+    # t.add_output(outputs.instance_id(jobmanager, prefix))
+    # t.add_output(outputs.az(jobmanager, prefix))
+    # t.add_output(outputs.public_dns(jobmanager, prefix))
+    # t.add_output(outputs.public_ip(jobmanager, prefix))
     t.add_output(Output(
         "FlinkWebGui",
         Description="Flink web interface",
@@ -326,10 +322,10 @@ def _generate_template(tms=1, within_vpc=False):
             subnet_pri
         ))
         prefix = "TaskManager%2.2d" % index
-        #t.add_output(outputs.instance_id(i, prefix))
-        #t.add_output(outputs.az(i, prefix))
-        #t.add_output(outputs.public_dns(i, prefix))
-        #t.add_output(outputs.public_ip(i, prefix))
+        # t.add_output(outputs.instance_id(i, prefix))
+        # t.add_output(outputs.az(i, prefix))
+        # t.add_output(outputs.public_dns(i, prefix))
+        # t.add_output(outputs.public_ip(i, prefix))
         t.add_output(Output(
             "SSH2%s" % prefix,
             Value=Join("", [

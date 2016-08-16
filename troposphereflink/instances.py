@@ -90,9 +90,9 @@ def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False,
             )
         ]
         depends_on = [
-            #FLINK_VPC,
-            #FLINK_PRIVATE_SUBNET,
-            #FLINK_PRIVATE_ROUTE_TABLE,
+            # FLINK_VPC,
+            # FLINK_PRIVATE_SUBNET,
+            # FLINK_PRIVATE_ROUTE_TABLE,
             FLINK_NAT
         ]
 
@@ -158,10 +158,10 @@ def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
             )
         ]
         depends_on = [
-            #FLINK_VPC,
-            #FLINK_INTERNET_GATEWAY,
-            #FLINK_PUBLIC_SUBNET,
-            #FLINK_PUBLIC_ROUTE_TABLE,
+            # FLINK_VPC,
+            # FLINK_INTERNET_GATEWAY,
+            # FLINK_PUBLIC_SUBNET,
+            # FLINK_PUBLIC_ROUTE_TABLE,
             FLINK_NAT
         ]
         return Instance(iname, InstanceType=instance_type,
@@ -174,9 +174,3 @@ def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
                         SecurityGroups=securitygroups, KeyName=key_name,
                         ImageId=image_id, Metadata=metadata,
                         UserData=user_data, CreationPolicy=creation_policy)
-
-# CreationPolicy=CreationPolicy(
-# ResourceSignal=ResourceSignal(
-# Timeout='PT15M'
-# )
-# ),
