@@ -167,6 +167,62 @@ AWSRegionArch2AMI = {
 }
 
 FlinkVersion2Env = {
+    "flink1.1.1-hadoop27-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop27-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop27-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop27-scala_2.10.tgz"
+        )
+    },
+    "flink1.1.1-hadoop26-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop26-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop26-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop26-scala_2.10.tgz"
+        )
+    },
+    "flink1.1.1-hadoop24-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop24-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop24-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop24-scala_2.10.tgz"
+        )
+    },
+    "flink1.1.1-hadoop2-scala2.11": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop2-scala_2.11.tgz"
+        )
+    },
+    "flink1.1.1-hadoop2-scala2.10": {
+        "dirname": "flink-1.1.1",
+        "binurl": (
+            "http://www-us.apache.org/dist/flink/flink-1.1.1/" +
+            "flink-1.1.1-bin-hadoop2-scala_2.10.tgz"
+        )
+    },
     "flink1.1.0-hadoop27-scala2.11": {
         "dirname": "flink-1.1.0",
         "binurl": (

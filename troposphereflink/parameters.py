@@ -124,7 +124,7 @@ flink_version = Parameter(
     "FlinkVersion",
     Description="Flink's version to be installed",
     Type="String",
-    Default="flink1.1.0-hadoop27-scala2.11",
+    Default="flink1.1.1-hadoop27-scala2.11",
     AllowedValues=[
         "flink1.0.3-hadoop2-scala2.11",
         "flink1.0.3-hadoop24-scala2.10",
@@ -141,6 +141,14 @@ flink_version = Parameter(
         "flink1.1.0-hadoop26-scala2.11",
         "flink1.1.0-hadoop27-scala2.10",
         "flink1.1.0-hadoop27-scala2.11",
+        "flink1.1.1-hadoop2-scala2.10",
+        "flink1.1.1-hadoop2-scala2.11",
+        "flink1.1.1-hadoop24-scala2.10",
+        "flink1.1.1-hadoop24-scala2.11",
+        "flink1.1.1-hadoop26-scala2.10",
+        "flink1.1.1-hadoop26-scala2.11",
+        "flink1.1.1-hadoop27-scala2.10",
+        "flink1.1.1-hadoop27-scala2.11",
     ]
 )
 
