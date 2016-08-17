@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from troposphere import GetAtt
+from troposphere import Join
 from troposphere import Output
 from troposphere import Ref
 

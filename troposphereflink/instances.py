@@ -93,7 +93,7 @@ def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False,
         return Instance(
             iname,
             CreationPolicy=creation_policy,
-            DependsOn=depends_on
+            DependsOn=depends_on,
             ImageId=image_id,
             InstanceType=instance_type,
             KeyName=key_name,
@@ -104,7 +104,7 @@ def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False,
     else:
         return Instance(
             iname,
-            CreationPolicy=creation_policy
+            CreationPolicy=creation_policy,
             ImageId=image_id,
             InstanceType=instance_type,
             KeyName=key_name,
@@ -168,7 +168,7 @@ def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
         return Instance(
             iname,
             CreationPolicy=creation_policy,
-            DependsOn=depends_on
+            DependsOn=depends_on,
             ImageId=image_id,
             InstanceType=instance_type,
             KeyName=key_name,
@@ -179,7 +179,7 @@ def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
     else:
         return Instance(
             iname,
-            CreationPolicy=creation_policy
+            CreationPolicy=creation_policy,
             ImageId=image_id,
             InstanceType=instance_type,
             KeyName=key_name,
