@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 _MAJOR = 0
-_MINOR = 1
+_MINOR = 2
 _PATCH = 0
 
 VERSION = "%d.%d.%d" % (_MAJOR, _MINOR, _PATCH)
