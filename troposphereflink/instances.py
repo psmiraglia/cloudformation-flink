@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from commons import *
 from troposphere import Base64
 from troposphere import FindInMap
 from troposphere import Join
@@ -33,7 +34,6 @@ from troposphere.policies import ResourceSignal
 import metadatas
 import parameters
 import securitygroups
-from commons import *
 
 JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
@@ -82,30 +82,36 @@ def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False,
     if within_vpc:
         network_interfaces = [
             NetworkInterfaceProperty(
-                GroupSet=securitygroups,
                 AssociatePublicIpAddress='true',
-                DeviceIndex='0',
                 DeleteOnTermination='true',
-                SubnetId=Ref(subnet)
-            )
+                DeviceIndex='0',
+                GroupSet=securitygroups,
+                SubnetId=Ref(subnet))
         ]
-        depends_on = [
-            # FLINK_VPC,
-            # FLINK_PRIVATE_SUBNET,
-            # FLINK_PRIVATE_ROUTE_TABLE,
-            FLINK_NAT
-        ]
+        depends_on = [FLINK_NAT]
 
-        return Instance(iname, InstanceType=instance_type,
-                        NetworkInterfaces=network_interfaces,
-                        KeyName=key_name, ImageId=image_id, Metadata=metadata,
-                        UserData=user_data, CreationPolicy=creation_policy,
-                        DependsOn=depends_on)
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            DependsOn=depends_on,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            NetworkInterfaces=network_interfaces,
+            UserData=user_data,
+        )
     else:
-        return Instance(iname, InstanceType=instance_type,
-                        SecurityGroups=securitygroups, KeyName=key_name,
-                        ImageId=image_id, Metadata=metadata,
-                        UserData=user_data, CreationPolicy=creation_policy)
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            SecurityGroups=securitygroups,
+            UserData=user_data,
+        )
 
 
 def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
@@ -150,27 +156,34 @@ def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
     if within_vpc:
         network_interfaces = [
             NetworkInterfaceProperty(
-                GroupSet=securitygroups,
                 AssociatePublicIpAddress='true',
-                DeviceIndex='0',
                 DeleteOnTermination='true',
+                DeviceIndex='0',
+                GroupSet=securitygroups,
                 SubnetId=Ref(subnet)
             )
         ]
-        depends_on = [
-            # FLINK_VPC,
-            # FLINK_INTERNET_GATEWAY,
-            # FLINK_PUBLIC_SUBNET,
-            # FLINK_PUBLIC_ROUTE_TABLE,
-            FLINK_NAT
-        ]
-        return Instance(iname, InstanceType=instance_type,
-                        NetworkInterfaces=network_interfaces,
-                        KeyName=key_name, ImageId=image_id, Metadata=metadata,
-                        UserData=user_data, CreationPolicy=creation_policy,
-                        DependsOn=depends_on)
+        depends_on = [FLINK_NAT]
+
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            DependsOn=depends_on,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            NetworkInterfaces=network_interfaces,
+            UserData=user_data,
+        )
     else:
-        return Instance(iname, InstanceType=instance_type,
-                        SecurityGroups=securitygroups, KeyName=key_name,
-                        ImageId=image_id, Metadata=metadata,
-                        UserData=user_data, CreationPolicy=creation_policy)
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            SecurityGroups=securitygroups,
+            UserData=user_data,
+        )

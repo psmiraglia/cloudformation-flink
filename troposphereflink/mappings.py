@@ -338,9 +338,9 @@ FlinkVersion2Env = {
 }
 
 FlinkCidrBlock = {
-    "vpc": {"CIDR": "10.77.0.0/16"},
     "private": {"CIDR": "10.77.0.0/24"},
     "public": {"CIDR": "10.77.1.0/24"},
+    "vpc": {"CIDR": "10.77.0.0/16"},
 }
 
 AWSNATAMI = {
@@ -361,7 +361,7 @@ AWSNATAMI = {
 def add_mappings(t):
     t.add_mapping("AWSInstanceType2Arch", AWSInstanceType2Arch)
     t.add_mapping("AWSInstanceType2NATArch", AWSInstanceType2NATArch)
-    t.add_mapping("AWSRegionArch2AMI", AWSRegionArch2AMI)
-    t.add_mapping("FlinkVersion2Env", FlinkVersion2Env)
-    t.add_mapping("FlinkCidrBlock", FlinkCidrBlock)
     t.add_mapping("AWSNATAMI", AWSNATAMI)
+    t.add_mapping("AWSRegionArch2AMI", AWSRegionArch2AMI)
+    t.add_mapping("FlinkCidrBlock", FlinkCidrBlock)
+    t.add_mapping("FlinkVersion2Env", FlinkVersion2Env)

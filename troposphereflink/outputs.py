@@ -23,37 +23,59 @@ SOFTWARE.
 """
 
 from troposphere import GetAtt
+from troposphere import Join
 from troposphere import Output
 from troposphere import Ref
 
 
-def instance_id(ref, prefix):
+def instance_id(instance, prefix):
     return Output(
         "%sInstanceId" % (prefix),
         Description="InstanceId of the newly created EC2 instance",
-        Value=Ref(ref)
+        Value=Ref(instance)
     )
 
 
-def az(ref, prefix):
+def az(instance, prefix):
     return Output(
         "%sAvailabilityZone" % (prefix),
         Description="availability Zone of the newly created EC2 instance",
-        Value=GetAtt(ref, "AvailabilityZone")
+        Value=GetAtt(instance, "AvailabilityZone")
     )
 
 
-def public_dns(ref, prefix):
+def public_dns(instance, prefix):
     return Output(
         "%sPublicDnsName" % (prefix),
         Description="Public DNSName of the newly created EC2 instance",
-        Value=GetAtt(ref, "PublicDnsName")
+        Value=GetAtt(instance, "PublicDnsName")
     )
 
 
-def public_ip(ref, prefix):
+def public_ip(instance, prefix):
     return Output(
         "%sPublicIp" % (prefix),
         Description="Public IP address of the newly created EC2 instance",
-        Value=GetAtt(ref, "PublicIp")
+        Value=GetAtt(instance, "PublicIp")
     )
+
+
+def ssh_to(instance, prefix, bastion=None):
+    out = None
+    if bastion is not None:
+        out = Output(
+            "SSH2%s" % prefix,
+            Description="SSH connection string",
+            Value=Join("", ['slogin -o ProxyCommand="slogin ec2-user@',
+                            GetAtt(bastion, "PublicDnsName"),
+                            ' -W %h:%p" ec2-user@',
+                            GetAtt(instance, "PrivateDnsName")])
+        )
+    else:
+        out = Output(
+            "SSH2%s" % prefix,
+            Description="SSH connection string",
+            Value=Join("", ['slogin ec2-user@',
+                            GetAtt(instance, "PublicDnsName")])
+        )
+    return out
