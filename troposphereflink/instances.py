@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from commons import *
 from troposphere import Base64
 from troposphere import FindInMap
 from troposphere import Join
@@ -31,7 +32,6 @@ from troposphere.ec2 import NetworkInterfaceProperty
 from troposphere.policies import CreationPolicy
 from troposphere.policies import ResourceSignal
 import metadatas
-import networking
 import parameters
 import securitygroups
 
@@ -39,99 +39,151 @@ JOB_MANAGER_INAME = "JobManagerInstance"
 TASK_MANAGER_INAME = "TaskManagerInstance"
 
 
-def task_manager(n, jm_ref, within_vpc=False):
-    iname = "%s%2.2d" % (TASK_MANAGER_INAME, n)
-    return Instance(
-        iname,
-        InstanceType=Ref(parameters.taskmanager_instance_type),
-        SecurityGroups=[
-            Ref(securitygroups.ssh),
-            Ref(securitygroups.taskmanager),
-        ],
-        KeyName=Ref(parameters.key_name),
-        ImageId=FindInMap(
-            "AWSRegionArch2AMI",
-            Ref("AWS::Region"),
-            FindInMap(
-                "AWSInstanceType2Arch",
-                Ref(parameters.taskmanager_instance_type),
-                "Arch"
-            )
-        ),
-        Metadata=metadatas.tm_metadata(jm_ref=jm_ref),
-        UserData=Base64(
-            Join('', [
-                "#!/bin/bash -xe\n",
-                "yum update -y aws-cfn-bootstrap\n",
-                "# Install the files and packages from the metadata\n",
-                "/opt/aws/bin/cfn-init -v ",
-                "         --stack ",
-                Ref("AWS::StackName"),
-                "         --resource %s " % iname,
-                "         --configsets InstallConfigureRun ",
-                "         --region ",
-                Ref("AWS::Region"),
-                "\n",
-                "# Signal the status from cfn-init\n",
-                "/opt/aws/bin/cfn-signal -e $? ",
-                "         --stack ",
-                Ref("AWS::StackName"),
-                "         --resource %s " % iname,
-                "         --region ",
-                Ref("AWS::Region"),
-                "\n"
-            ])
-        ),
+def taskmanager(index, jobmanager, securitygroups=[], within_vpc=False,
+                subnet=None):
+    iname = "%s%2.2d" % (TASK_MANAGER_INAME, index)
+    instance_type = Ref(parameters.taskmanager_instance_type)
+    key_name = Ref(parameters.key_name)
+    image_id = FindInMap(
+        "AWSRegionArch2AMI",
+        Ref("AWS::Region"),
+        FindInMap(
+            "AWSInstanceType2Arch",
+            Ref(parameters.taskmanager_instance_type),
+            "Arch"
+        )
+    )
+    user_data = Base64(Join('', [
+        "#!/bin/bash -xe\n",
+        "yum update -y aws-cfn-bootstrap\n",
+        "# Install the files and packages from the metadata\n",
+        "/opt/aws/bin/cfn-init -v ",
+        "         --stack ",
+        Ref("AWS::StackName"),
+        "         --resource %s " % iname,
+        "         --configsets InstallConfigureRun ",
+        "         --region ",
+        Ref("AWS::Region"),
+        "\n",
+        "# Signal the status from cfn-init\n",
+        "/opt/aws/bin/cfn-signal -e $? ",
+        "         --stack ",
+        Ref("AWS::StackName"),
+        "         --resource %s " % iname,
+        "         --region ",
+        Ref("AWS::Region"),
+        "\n"
+    ]))
+    creation_policy = CreationPolicy(
+        ResourceSignal=ResourceSignal(Timeout="PT15M")
+    )
+    metadata = metadatas.taskmanager(jobmanager=jobmanager)
+
+    if within_vpc:
+        network_interfaces = [
+            NetworkInterfaceProperty(
+                AssociatePublicIpAddress='true',
+                DeleteOnTermination='true',
+                DeviceIndex='0',
+                GroupSet=securitygroups,
+                SubnetId=Ref(subnet))
+        ]
+        depends_on = [FLINK_NAT]
+
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            DependsOn=depends_on,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            NetworkInterfaces=network_interfaces,
+            UserData=user_data,
+        )
+    else:
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            SecurityGroups=securitygroups,
+            UserData=user_data,
+        )
+
+
+def jobmanager(index=0, securitygroups=[], within_vpc=False, subnet=None):
+    iname = "%s%2.2d" % (JOB_MANAGER_INAME, index)
+    instance_type = Ref(parameters.jobmanager_instance_type)
+    key_name = Ref(parameters.key_name)
+    image_id = FindInMap(
+        "AWSRegionArch2AMI",
+        Ref("AWS::Region"),
+        FindInMap(
+            "AWSInstanceType2Arch",
+            Ref(parameters.jobmanager_instance_type),
+            "Arch"
+        )
+    )
+    metadata = metadatas.jobmanager()
+    user_data = Base64(Join('', [
+        "#!/bin/bash -xe\n",
+        "yum update -y aws-cfn-bootstrap\n",
+        "# Install the files and packages from the metadata\n",
+        "/opt/aws/bin/cfn-init -v ",
+        "         --stack ",
+        Ref("AWS::StackName"),
+        "         --resource %s " % iname,
+        "         --configsets InstallConfigureRun ",
+        "         --region ",
+        Ref("AWS::Region"),
+        "\n",
+        "# Signal the status from cfn-init\n",
+        "/opt/aws/bin/cfn-signal -e $? ",
+        "         --stack ",
+        Ref("AWS::StackName"),
+        "         --resource %s " % iname,
+        "         --region ",
+        Ref("AWS::Region"),
+        "\n"
+    ]))
+    creation_policy = CreationPolicy(
+        ResourceSignal=ResourceSignal(Timeout="PT15M")
     )
 
-
-def job_manager(n=0, within_vpc=False):
-    iname = "%s%2.2d" % (JOB_MANAGER_INAME, n)
-    return Instance(
-        iname,
-        InstanceType=Ref(parameters.jobmanager_instance_type),
-        SecurityGroups=[
-            Ref(securitygroups.ssh),
-            Ref(securitygroups.jobmanager),
-        ],
-        KeyName=Ref(parameters.key_name),
-        ImageId=FindInMap(
-            "AWSRegionArch2AMI",
-            Ref("AWS::Region"),
-            FindInMap(
-                "AWSInstanceType2Arch",
-                Ref(parameters.jobmanager_instance_type),
-                "Arch"
+    if within_vpc:
+        network_interfaces = [
+            NetworkInterfaceProperty(
+                AssociatePublicIpAddress='true',
+                DeleteOnTermination='true',
+                DeviceIndex='0',
+                GroupSet=securitygroups,
+                SubnetId=Ref(subnet)
             )
-        ),
-        Metadata=metadatas.jm_metadata(),
-        UserData=Base64(
-            Join('', [
-                "#!/bin/bash -xe\n",
-                "yum update -y aws-cfn-bootstrap\n",
-                "# Install the files and packages from the metadata\n",
-                "/opt/aws/bin/cfn-init -v ",
-                "         --stack ",
-                Ref("AWS::StackName"),
-                "         --resource %s " % iname,
-                "         --configsets InstallConfigureRun ",
-                "         --region ",
-                Ref("AWS::Region"),
-                "\n",
-                "# Signal the status from cfn-init\n",
-                "/opt/aws/bin/cfn-signal -e $? ",
-                "         --stack ",
-                Ref("AWS::StackName"),
-                "         --resource %s " % iname,
-                "         --region ",
-                Ref("AWS::Region"),
-                "\n"
-            ])
-        ),
-    )
+        ]
+        depends_on = [FLINK_NAT]
 
-# CreationPolicy=CreationPolicy(
-# ResourceSignal=ResourceSignal(
-# Timeout='PT15M'
-# )
-# ),
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            DependsOn=depends_on,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            NetworkInterfaces=network_interfaces,
+            UserData=user_data,
+        )
+    else:
+        return Instance(
+            iname,
+            CreationPolicy=creation_policy,
+            ImageId=image_id,
+            InstanceType=instance_type,
+            KeyName=key_name,
+            Metadata=metadata,
+            SecurityGroups=securitygroups,
+            UserData=user_data,
+        )

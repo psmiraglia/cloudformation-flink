@@ -25,52 +25,51 @@ SOFTWARE.
 from troposphere import Ref
 from troposphere.ec2 import SecurityGroup
 from troposphere.ec2 import SecurityGroupRule
-import networking
 import parameters
 
-ssh = SecurityGroup(
-    "SSHSecurityGroup",
-    GroupDescription="Enable SSH access via port 22",
-    SecurityGroupIngress=[
-        SecurityGroupRule(
-            IpProtocol="tcp",
-            FromPort="22",
-            ToPort="22",
-            CidrIp=Ref(parameters.ssh_location)
-        )
-    ],
-    # VpcId=Ref(networking.vpc_flink)
-)
 
-jobmanager = SecurityGroup(
-    "JobManagerSecurityGroup",
-    GroupDescription="Regulates the accesses to JobManager",
-    SecurityGroupIngress=[
-        SecurityGroupRule(
-            IpProtocol="tcp",
-            FromPort="6123",
-            ToPort="6123",
-            CidrIp="0.0.0.0/0"
-        ),
-        SecurityGroupRule(
-            IpProtocol="tcp",
-            FromPort="8081",
-            ToPort="8081",
-            CidrIp=Ref(parameters.http_location)
-        )
-    ],
-    # VpcId=Ref(networking.vpc_flink)
-)
+def ssh(location, vpc=None):
+    properties = dict(
+        GroupDescription="Enable SSH access via port 22",
+        SecurityGroupIngress=[
+            SecurityGroupRule(IpProtocol="tcp", CidrIp=Ref(location),
+                              FromPort="22", ToPort="22")
+        ]
+    )
 
-taskmanager = SecurityGroup(
-    "TaskManagerSecurityGroup",
-    GroupDescription="Regulates the accesses to TaskManager",
-    SecurityGroupIngress=[],
-    # VpcId=Ref(networking.vpc_flink)
-)
+    if vpc:
+        properties["VpcId"] = Ref(vpc)
+
+    sg = SecurityGroup("None", GroupDescription="None")
+    return sg.from_dict("SSHSecurityGroup", properties)
 
 
-def add_resources(t):
-    t.add_resource(ssh)
-    t.add_resource(jobmanager)
-    t.add_resource(taskmanager)
+def jobmanager(location, vpc=None):
+    properties = dict(
+        GroupDescription="Enable accesses to JobManager",
+        SecurityGroupIngress=[
+            SecurityGroupRule(IpProtocol="tcp", CidrIp="0.0.0.0/0",
+                              FromPort="6123", ToPort="6123"),
+            SecurityGroupRule(IpProtocol="tcp", CidrIp=Ref(location),
+                              FromPort="8081", ToPort="8081")
+        ]
+    )
+
+    if vpc:
+        properties["VpcId"] = Ref(vpc)
+
+    sg = SecurityGroup("None", GroupDescription="None")
+    return sg.from_dict("JobManagerSecurityGroup", properties)
+
+
+def taskmanager(location, vpc=None):
+    properties = dict(
+        GroupDescription="Enable accesses to TaskManager",
+        SecurityGroupIngress=[]
+    )
+
+    if vpc:
+        properties["VpcId"] = Ref(vpc)
+
+    sg = SecurityGroup("None", GroupDescription="None")
+    return sg.from_dict("TaskManagerSecurityGroup", properties)

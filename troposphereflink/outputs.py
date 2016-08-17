@@ -23,37 +23,59 @@ SOFTWARE.
 """
 
 from troposphere import GetAtt
+from troposphere import Join
 from troposphere import Output
 from troposphere import Ref
 
 
-def instance_id(ref, prefix, n=0):
+def instance_id(instance, prefix):
     return Output(
-        "%s%2.2dInstanceId" % (prefix, n),
+        "%sInstanceId" % (prefix),
         Description="InstanceId of the newly created EC2 instance",
-        Value=Ref(ref)
+        Value=Ref(instance)
     )
 
 
-def az(ref, prefix, n=0):
+def az(instance, prefix):
     return Output(
-        "%s%2.2dAvailabilityZone" % (prefix, n),
+        "%sAvailabilityZone" % (prefix),
         Description="availability Zone of the newly created EC2 instance",
-        Value=GetAtt(ref, "AvailabilityZone")
+        Value=GetAtt(instance, "AvailabilityZone")
     )
 
 
-def public_dns(ref, prefix, n=0):
+def public_dns(instance, prefix):
     return Output(
-        "%s%2.2dPublicDnsName" % (prefix, n),
+        "%sPublicDnsName" % (prefix),
         Description="Public DNSName of the newly created EC2 instance",
-        Value=GetAtt(ref, "PublicDnsName")
+        Value=GetAtt(instance, "PublicDnsName")
     )
 
 
-def public_ip(ref, prefix, n=0):
+def public_ip(instance, prefix):
     return Output(
-        "%s%2.2dPublicIp" % (prefix, n),
+        "%sPublicIp" % (prefix),
         Description="Public IP address of the newly created EC2 instance",
-        Value=GetAtt(ref, "PublicIp")
+        Value=GetAtt(instance, "PublicIp")
     )
+
+
+def ssh_to(instance, prefix, bastion=None):
+    out = None
+    if bastion is not None:
+        out = Output(
+            "SSH2%s" % prefix,
+            Description="SSH connection string",
+            Value=Join("", ['slogin -o ProxyCommand="slogin ec2-user@',
+                            GetAtt(bastion, "PublicDnsName"),
+                            ' -W %h:%p" ec2-user@',
+                            GetAtt(instance, "PrivateDnsName")])
+        )
+    else:
+        out = Output(
+            "SSH2%s" % prefix,
+            Description="SSH connection string",
+            Value=Join("", ['slogin ec2-user@',
+                            GetAtt(instance, "PublicDnsName")])
+        )
+    return out
