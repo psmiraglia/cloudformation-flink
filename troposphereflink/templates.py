@@ -22,9 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from commons import *
 from troposphere import Base64
-from troposphere.policies import CreationPolicy
-from troposphere.policies import ResourceSignal
 from troposphere import FindInMap
 from troposphere import GetAtt
 from troposphere import Join
@@ -45,14 +44,14 @@ from troposphere.ec2 import SubnetNetworkAclAssociation
 from troposphere.ec2 import SubnetRouteTableAssociation
 from troposphere.ec2 import VPC
 from troposphere.ec2 import VPCGatewayAttachment
+from troposphere.policies import CreationPolicy
+from troposphere.policies import ResourceSignal
 import datetime
 import instances
 import mappings
 import outputs
 import parameters
 import securitygroups
-
-from commons import *
 
 
 def _define_vpc(t, **kwargs):
@@ -78,29 +77,26 @@ def _define_vpc(t, **kwargs):
     ))
 
     #
-    # public subnet (jobmanagers)
+    # public subnet (jobmanagers + nat)
     #
 
     subnet_pub = t.add_resource(Subnet(
         FLINK_PUBLIC_SUBNET,
         CidrBlock=FindInMap("FlinkCidrBlock", "public", "CIDR"),
         VpcId=Ref(vpc),
-        # DependsOn=[FLINK_VPC],
     ))
 
-    # routes...
+    # routes
 
     rt_pub = t.add_resource(RouteTable(
         FLINK_PUBLIC_ROUTE_TABLE,
         VpcId=Ref(vpc),
-        # DependsOn=[FLINK_VPC],
     ))
 
     t.add_resource(SubnetRouteTableAssociation(
         "FlinkPublicSubnetRouteTableAssociation",
         SubnetId=Ref(subnet_pub),
         RouteTableId=Ref(rt_pub),
-        # DependsOn=[FLINK_PUBLIC_SUBNET, FLINK_PUBLIC_ROUTE_TABLE],
     ))
 
     t.add_resource(Route(
@@ -108,10 +104,9 @@ def _define_vpc(t, **kwargs):
         RouteTableId=Ref(rt_pub),
         DestinationCidrBlock="0.0.0.0/0",
         GatewayId=Ref(igw),
-        # DependsOn=[FLINK_INTERNET_GATEWAY, FLINK_PUBLIC_ROUTE_TABLE]
     ))
 
-    # acl...
+    # acl (todo)
     """
     nwacl_pub = t.add_resource(NetworkAcl(
         "FlinkPublicNetworkAcl",
@@ -125,35 +120,14 @@ def _define_vpc(t, **kwargs):
     ))
     """
 
-    #
-    # private subnet (taskmanagers)
-    #
-
-    subnet_pri = t.add_resource(Subnet(
-        FLINK_PRIVATE_SUBNET,
-        CidrBlock=FindInMap("FlinkCidrBlock", "private", "CIDR"),
-        VpcId=Ref(vpc),
-        # DependsOn=[FLINK_VPC]
-    ))
-
-    # routes...
-
-    rt_pri = t.add_resource(RouteTable(
-        FLINK_PRIVATE_ROUTE_TABLE,
-        VpcId=Ref(vpc),
-        # DependsOn=[FLINK_VPC]
-    ))
-
-    t.add_resource(SubnetRouteTableAssociation(
-        "FlinkPrivateSubnetRouteTableAssociation",
-        SubnetId=Ref(subnet_pri),
-        RouteTableId=Ref(rt_pri),
-        # DependsOn=[FLINK_PRIVATE_SUBNET, FLINK_PRIVATE_ROUTE_TABLE]
-    ))
+    # nat
 
     sg_nat = t.add_resource(SecurityGroup(
         FLINK_NAT_SECURITY_GROUP,
-        GroupDescription="To be completed...",
+        GroupDescription=(
+            "It allows incoming connections on ports 0-1024 from private " +
+            "subnet while on port 22 from 'SSH Location' parameter."
+        ),
         VpcId=Ref(vpc),
         SecurityGroupIngress=[
             SecurityGroupRule(
@@ -175,12 +149,6 @@ def _define_vpc(t, **kwargs):
                 CidrIp=Ref(parameters.ssh_location)
             ),
         ],
-        # SecurityGroupEgress=[
-        # SecurityGroupRule(
-        # IpProtocol="-1",
-        # CidrIp="0.0.0.0/0"
-        # ),
-        # ],
     ))
 
     nat = t.add_resource(Instance(
@@ -199,14 +167,6 @@ def _define_vpc(t, **kwargs):
                 AssociatePublicIpAddress=True
             ),
         ],
-        # DependsOn=[
-        # FLINK_VPC,
-        # FLINK_INTERNET_GATEWAY,
-        # FLINK_VPC_GATEWAY_ATTACHMENT,
-        # FLINK_PUBLIC_SUBNET,
-        # FLINK_PUBLIC_ROUTE_TABLE,
-        # FLINK_NAT_SECURITY_GROUP
-        # ],
         UserData=Base64(Join("", [
             "#!/bin/bash -xe\n",
             "yum update -y aws-cfn-bootstrap\n",
@@ -222,15 +182,31 @@ def _define_vpc(t, **kwargs):
         CreationPolicy=CreationPolicy(
             ResourceSignal=ResourceSignal(Timeout="PT15M")
         )
-        # SecurityGroupIds=[Ref(sg_nat)],
-        # SubnetId=Ref(subnet_pub),
     ))
 
-    t.add_output(Output(
-        "SSH2%s" % FLINK_NAT,
-        Value=Join("", [
-            'slogin ec2-user@', GetAtt(nat, "PublicDnsName")
-        ])
+    t.add_output(outputs.ssh_to(nat, FLINK_NAT))
+
+    #
+    # private subnet (taskmanagers)
+    #
+
+    subnet_pri = t.add_resource(Subnet(
+        FLINK_PRIVATE_SUBNET,
+        CidrBlock=FindInMap("FlinkCidrBlock", "private", "CIDR"),
+        VpcId=Ref(vpc),
+    ))
+
+    # routes
+
+    rt_pri = t.add_resource(RouteTable(
+        FLINK_PRIVATE_ROUTE_TABLE,
+        VpcId=Ref(vpc),
+    ))
+
+    t.add_resource(SubnetRouteTableAssociation(
+        "FlinkPrivateSubnetRouteTableAssociation",
+        SubnetId=Ref(subnet_pri),
+        RouteTableId=Ref(rt_pri),
     ))
 
     t.add_resource(Route(
@@ -238,10 +214,9 @@ def _define_vpc(t, **kwargs):
         RouteTableId=Ref(rt_pri),
         DestinationCidrBlock="0.0.0.0/0",
         InstanceId=Ref(nat),
-        # DependsOn=[FLINK_PRIVATE_ROUTE_TABLE, FLINK_NAT]
     ))
 
-    # acl...
+    # acl (todo)
     """
     nwacl_pri = t.add_resource(NetworkAcl(
         "FlinkPrivateNetworkAcl",
@@ -295,21 +270,12 @@ def _generate_template(tms=1, within_vpc=False):
     ))
 
     prefix = "JobManager00"
-    # t.add_output(outputs.instance_id(jobmanager, prefix))
-    # t.add_output(outputs.az(jobmanager, prefix))
-    # t.add_output(outputs.public_dns(jobmanager, prefix))
-    # t.add_output(outputs.public_ip(jobmanager, prefix))
+    t.add_output(outputs.ssh_to(jobmanager, prefix))
     t.add_output(Output(
         "FlinkWebGui",
         Description="Flink web interface",
         Value=Join("", [
             'http://', GetAtt(jobmanager, "PublicDnsName"), ':8081'
-        ])
-    ))
-    t.add_output(Output(
-        "SSH2JobManager",
-        Value=Join("", [
-            'slogin ec2-user@', GetAtt(jobmanager, "PublicDnsName")
         ])
     ))
 
@@ -322,19 +288,7 @@ def _generate_template(tms=1, within_vpc=False):
             subnet_pri
         ))
         prefix = "TaskManager%2.2d" % index
-        # t.add_output(outputs.instance_id(i, prefix))
-        # t.add_output(outputs.az(i, prefix))
-        # t.add_output(outputs.public_dns(i, prefix))
-        # t.add_output(outputs.public_ip(i, prefix))
-        t.add_output(Output(
-            "SSH2%s" % prefix,
-            Value=Join("", [
-                'ssh -o ProxyCommand="slogin ec2-user@',
-                GetAtt(jobmanager, "PublicDnsName"),
-                ' -W %h:%p" ec2-user@',
-                GetAtt(i, "PrivateDnsName"),
-            ])
-        ))
+        t.add_output(outputs.ssh_to(i, prefix, bastion=jobmanager))
 
     return t.to_json()
 
