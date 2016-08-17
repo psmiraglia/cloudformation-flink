@@ -126,22 +126,6 @@ http_location = Parameter(
                            "of the form x.x.x.x/x")
 )
 
-"""
-jobmanager_rpc_location = Parameter(
-    "JobManagerRpcLocation",
-    Description=("The IP address range that can be used" +
-                 "to RPC to the JobManager instances"),
-    Type="String",
-    MinLength="9",
-    MaxLength="18",
-    Default="0.0.0.0/0",
-    AllowedPattern=("(\\d{1,3})\\.(\\d{1,3})" +
-                    "\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"),
-    ConstraintDescription=("Must be a valid IP CIDR range " +
-                           "of the form x.x.x.x/x")
-)
-"""
-
 flink_version = Parameter(
     "FlinkVersion",
     Description="Flink's version to be installed",
@@ -176,10 +160,9 @@ flink_version = Parameter(
 
 
 def add_parameters(t):
+    t.add_parameter(flink_version)
+    t.add_parameter(http_location)
     t.add_parameter(jobmanager_instance_type)
-    t.add_parameter(taskmanager_instance_type)
     t.add_parameter(key_name)
     t.add_parameter(ssh_location)
-    t.add_parameter(http_location)
-    # t.add_parameter(jobmanager_rpc_location)
-    t.add_parameter(flink_version)
+    t.add_parameter(taskmanager_instance_type)
