@@ -126,7 +126,7 @@ def _define_vpc(t, **kwargs):
         FLINK_NAT_SECURITY_GROUP,
         GroupDescription=(
             "It allows incoming connections on ports 0-1024 from private " +
-            "subnet while on port 22 from 'SSH Location' parameter."
+            "subnet while on port 22 from SSHLocation parameter."
         ),
         VpcId=Ref(vpc),
         SecurityGroupIngress=[

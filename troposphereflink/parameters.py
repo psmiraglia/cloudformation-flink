@@ -164,5 +164,6 @@ def add_parameters(t):
     t.add_parameter(http_location)
     t.add_parameter(jobmanager_instance_type)
     t.add_parameter(key_name)
+    t.add_parameter(nat_instance_type)
     t.add_parameter(ssh_location)
     t.add_parameter(taskmanager_instance_type)
