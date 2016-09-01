@@ -24,9 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from troposphereflink import templates
+from cfengine import commons
+from cfengine import clusters
 import argparse
-import troposphereflink
 import sys
 
 DEFAULT_TASK_MANAGERS = 2
@@ -76,24 +76,20 @@ def main():
     args = parser.parse_args()
 
     if args.version:
-        print(troposphereflink.VERSION)
+        print(commons.VERSION)
         sys.exit(0)
 
-    tms = args.task_managers
-    output = args.output
-    within_vpc = args.within_vpc
-
-    template = ""
-    if within_vpc:
-        template = templates.within_vpc(tms)
+    c = None
+    if args.within_vpc:
+        c = clusters.VpcCluster(args.task_managers)
     else:
-        template = templates.simple(tms)
+        c = clusters.StandaloneCluster(args.task_managers)
 
-    if output is None:
-        print(template)
+    if args.output is None:
+        print c.to_template()
     else:
-        with open(output, "w+") as f:
-            f.write(template)
+        with open(args.output, "w+") as f:
+            f.write(t.to_template())
             f.close()
 
 if __name__ == "__main__":
